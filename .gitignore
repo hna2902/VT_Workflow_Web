@@ -1,0 +1,29 @@
+# 1. Environment Variables & Secrets (CRITICAL)
+.env
+local_settings.py
+
+# 2. Python Virtual Environments
+venv/
+.venv/
+env/
+ENV/
+
+# 3. Python Cache & Compiled Files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# 4. Django Stuff
+*.log
+db.sqlite3
+db.sqlite3-journal
+media/
+
+# 5. IDEs & OS Specific
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# 6. Diagram
+diagram/
