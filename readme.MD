@@ -25,12 +25,12 @@ Prerequisites: Docker and Docker Compose must be installed on your local machine
 
 **1. Environment Variables Setup**
 Create a `.env` file in the root directory to secure credentials:
-env:
-DB_NAME=vt_workflow
-DB_USER=admin
-DB_PASSWORD=your_secure_password
-PGADMIN_EMAIL=admin@workflow.com
-PGADMIN_PASSWORD=your_pgadmin_password
+*env:
+- DB_NAME=vt_workflow
+- DB_USER=admin
+- DB_PASSWORD=your_secure_password
+- PGADMIN_EMAIL=admin@workflow.com
+- PGADMIN_PASSWORD=your_pgadmin_password
 
 **2. Spin up the Infrastructure**
 Launch the PostgreSQL database, Redis, and pgAdmin in detached mode:
