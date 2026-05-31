@@ -25,7 +25,6 @@ Prerequisites: Docker and Docker Compose must be installed on your local machine
 
 **1. Environment Variables Setup**
 Create a `.env` file in the root directory to secure credentials:
-# env:
 - DB_NAME=vt_workflow
 - DB_USER=admin
 - DB_PASSWORD=your_secure_password
