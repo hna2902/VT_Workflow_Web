@@ -1,10 +1,11 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import AssetItemViewSet, CategoryViewSet
+from .views import AssetItemViewSet, CategoryViewSet, WorkflowViewSet
 
 router = DefaultRouter()
 router.register(r'categories', CategoryViewSet, basename='category')
 router.register(r'assets', AssetItemViewSet, basename='asset')
+router.register(r'workflows', WorkflowViewSet, basename='workflow')
 urlpatterns = [
     path('', include(router.urls)),
     

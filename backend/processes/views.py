@@ -1,6 +1,6 @@
 from rest_framework import viewsets
-from .models import Category, AssetItem
-from .serializers import CategorySerializer, AssetItemSerializer
+from .models import Category, AssetItem, Workflow
+from .serializers import CategorySerializer, AssetItemSerializer, WorkflowSerializer
 
 class CategoryViewSet(viewsets.ModelViewSet):
     # 1. Define the data source
@@ -12,9 +12,6 @@ class AssetItemViewSet(viewsets.ModelViewSet):
     queryset = AssetItem.objects.all()
     serializer_class = AssetItemSerializer
 
-    # 💡 ADVANCED: Customizing the Queryset for Filtering
-    # Why do we need this? Frontend doesn't always want ALL assets in the company.
-    # Often, they only want assets belonging to a specific category (e.g., clicking on "Modem" category).
     def get_queryset(self):
         # 1. Get the base list of all assets
         queryset = super().get_queryset()
@@ -27,4 +24,16 @@ class AssetItemViewSet(viewsets.ModelViewSet):
         if category_id:
             queryset = queryset.filter(category_id=category_id)
             
+        return queryset
+    
+class WorkflowViewSet(viewsets.ModelViewSet):
+    queryset = Workflow.objects.all()
+    serializer_class = WorkflowSerializer
+    
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        asset_item_id = self.request.query_params.get('asset_item')
+        if asset_item_id:
+            queryset = queryset.filter(asset_item_id=asset_item_id)
+        
         return queryset
