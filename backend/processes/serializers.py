@@ -1,7 +1,5 @@
-from multiprocessing import Process
-
 from rest_framework import serializers
-from .models import Category, AssetItem, ProcessImage, Workflow
+from .models import Category, AssetItem, Process, ProcessImage, Workflow
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:

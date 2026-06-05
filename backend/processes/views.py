@@ -42,7 +42,6 @@ class ProcessViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(workflow_id=workflow_id)
         return queryset
 
-
 class ProcessImageViewSet(viewsets.ModelViewSet):
     queryset = ProcessImage.objects.all()
     serializer_class = ProcessImageSerializer

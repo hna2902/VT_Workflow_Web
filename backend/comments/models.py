@@ -12,7 +12,6 @@ class Comment(models.Model):
     def __str__(self):
         return f"Comment by {self.user.username} on {self.workflow.name}"
     
-
 # CommentImg table
 # Using to store picture for comments
 class CommentImage(models.Model):
