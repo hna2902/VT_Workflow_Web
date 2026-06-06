@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from backend.comments.models import Comment, CommentImage
+from .models import Comment, CommentImage
 
 class CommentImageSerializer(serializers.ModelSerializer):
     class Meta:

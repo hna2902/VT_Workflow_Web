@@ -2,8 +2,8 @@ from django.shortcuts import render
 from rest_framework import viewsets
 from rest_framework.parsers import MultiPartParser, FormParser
 
-from backend.comments.models import Comment, CommentImage
-from backend.comments.serializers import CommentSerializer, CommentImageSerializer
+from .models import Comment, CommentImage
+from .serializers import CommentSerializer, CommentImageSerializer
 
 # Create your views here.
 class CommentViewSet(viewsets.ModelViewSet):
