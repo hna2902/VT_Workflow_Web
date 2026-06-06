@@ -16,13 +16,15 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import include, path
-from backend.core import settings
+from core import settings
 from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('api/', include('users.urls')),
     path('api/', include('processes.urls')),
     path('api/', include('comments.urls')),
+    
 ]
 
 # Serve media files locally during development
