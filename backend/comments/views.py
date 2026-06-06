@@ -1,12 +1,13 @@
 from django.shortcuts import render
 from rest_framework import viewsets
 from rest_framework.parsers import MultiPartParser, FormParser
-
+from rest_framework.permissions import IsAuthenticated
 from .models import Comment, CommentImage
 from .serializers import CommentSerializer, CommentImageSerializer
 
 # Create your views here.
 class CommentViewSet(viewsets.ModelViewSet):
+    permission_classes = [IsAuthenticated]
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
     def get_queryset(self):
@@ -17,6 +18,7 @@ class CommentViewSet(viewsets.ModelViewSet):
         return queryset
     
 class CommentImageViewSet(viewsets.ModelViewSet):
+    permission_classes = [IsAuthenticated]
     queryset = CommentImage.objects.all()
     serializer_class = CommentImageSerializer
     parser_classes = [MultiPartParser, FormParser]

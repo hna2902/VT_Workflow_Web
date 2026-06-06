@@ -1,13 +1,21 @@
 from rest_framework import viewsets
 from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework.permissions import IsAdminUser, IsAuthenticated
+
 from .models import Category, AssetItem, Workflow, Process, ProcessImage
 from .serializers import CategorySerializer, AssetItemSerializer, WorkflowSerializer, ProcessSerializer, ProcessImageSerializer
+from .permissions import IsAdminOrCategoryLeader
+
 
 class CategoryViewSet(viewsets.ModelViewSet):
     # 1. Define the data source
     queryset = Category.objects.all()
     # 2. Define the translator
     serializer_class = CategorySerializer
+    def get_permission(self):
+        if self.action in ['create', 'update', 'partial_update', 'destroy']:
+            return [IsAdminUser()]
+        return [IsAuthenticated()]
 
 class AssetItemViewSet(viewsets.ModelViewSet):
     queryset = AssetItem.objects.all()
@@ -21,6 +29,10 @@ class AssetItemViewSet(viewsets.ModelViewSet):
         if category_id:
             queryset = queryset.filter(category_id=category_id)
         return queryset
+    def get_permission(self):
+        if self.action in ['create', 'update', 'partial_update', 'destroy']:
+            return [IsAdminUser()]
+        return [IsAuthenticated()]
     
 class WorkflowViewSet(viewsets.ModelViewSet):
     queryset = Workflow.objects.all()
@@ -31,6 +43,13 @@ class WorkflowViewSet(viewsets.ModelViewSet):
         if asset_item_id:
             queryset = queryset.filter(asset_item_id=asset_item_id)
         return queryset
+    def get_permission(self):
+        # Global admins can create, but category leaders can update/delete their own workflows
+        if self.action == 'create':
+            return [IsAdminUser()] 
+        elif self.action in ['update', 'partial_update', 'destroy']:
+            return [IsAdminOrCategoryLeader()]
+        return [IsAuthenticated()]
     
 class ProcessViewSet(viewsets.ModelViewSet):
     queryset = Process.objects.all()
@@ -41,9 +60,21 @@ class ProcessViewSet(viewsets.ModelViewSet):
         if workflow_id:
             queryset = queryset.filter(workflow_id=workflow_id)
         return queryset
+    def get_permissions(self):
+        if self.action == 'create':
+            return [IsAdminUser()] 
+        elif self.action in ['update', 'partial_update', 'destroy']:
+            return [IsAdminOrCategoryLeader()]
+        return [IsAuthenticated()]
 
 class ProcessImageViewSet(viewsets.ModelViewSet):
     queryset = ProcessImage.objects.all()
     serializer_class = ProcessImageSerializer
     # Enable file upload handling (multipart/form-data)
     parser_classes = [MultiPartParser, FormParser]
+    def get_permission(self):
+        if self.action == 'create':
+            return [IsAdminUser()] 
+        elif self.action in ['update', 'partial_update', 'destroy']:
+            return [IsAdminOrCategoryLeader()]
+        return [IsAuthenticated()]

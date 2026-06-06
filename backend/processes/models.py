@@ -1,11 +1,13 @@
 import uuid
 from django.db import models
+from core import settings
 
 # Category table
 # High-level asset classifications managed exclusively by Admins
 class Category(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     title = models.CharField(max_length=255, unique=True)
+    leader = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True,blank=True,related_name='managed_categories')
     status = models.CharField(max_length=50, default='Active')
     create_at = models.DateTimeField(auto_now_add=True)
 
@@ -63,3 +65,4 @@ class ProcessImage(models.Model):
 
     def __str__(self):
         return f"Image for {self.process.name}"
+    
