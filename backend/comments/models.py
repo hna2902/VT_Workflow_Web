@@ -16,7 +16,7 @@ class Comment(models.Model):
 # Using to store picture for comments
 class CommentImage(models.Model):
     comment = models.ForeignKey(Comment, on_delete=models.CASCADE, related_name='images')
-    img_url = models.CharField(max_length=1000)
+    img_url = models.ImageField(max_length=1000)
     create_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
