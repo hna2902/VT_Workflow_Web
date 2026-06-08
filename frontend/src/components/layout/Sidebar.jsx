@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import Modal from './Modal';
+import Modal from '../common/Modal';
 
 const Sidebar = ({ activeCategory, setActiveCategory }) => {
   const [categories, setCategories] = useState(['Nguồn', 'Modem']);

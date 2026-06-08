@@ -1,6 +1,6 @@
 import React from 'react';
 
-const MainContent = ({ activeCategory }) => {
+const Category = ({ activeCategory }) => {
   return (
     // Main area with very light slate background
     <main className="flex flex-col flex-1 bg-slate-50">
