@@ -25,13 +25,13 @@ class PasswordResetRequestView(APIView):
         serializer = PasswordResetRequestSerializer(data=request.data)
         if serializer.is_valid():
             email = serializer.validated_data['email']
-            user = User.objecs.filter(email=email).first()
+            user = User.objects.filter(email=email).first()
             if user:
                 # Generate a secure token and encoded user ID
                 uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
                 token = PasswordResetTokenGenerator().make_token(user)
                 # Link must point to the Frontend routing
-                reset_link = f"http://localhost:3000/reset_password?uid={uidb64}&token={token}"
+                reset_link = f"http://localhost:5173/reset_password?uid={uidb64}&token={token}"
                 send_mail(
                     subject = "Password Reset Request",
                     message = f"Click the link below to reset your password",
