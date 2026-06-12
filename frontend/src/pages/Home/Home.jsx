@@ -52,8 +52,8 @@ const UserDashboard = ({ userName }) => (
 
 const Home = () => {
     // Đoạn này lấy chuẩn xác trường "name" mà Backend trả về
-    const role = localStorage.getItem('user_role') || sessionStorage.getItem('user_role'); 
-    const name = localStorage.getItem('user_name') || sessionStorage.getItem('user_name');
+    const role = localStorage.getItem('user_role') || sessionStorage.getItem('user_role') || 'User'; 
+    const name = localStorage.getItem('user_name') || sessionStorage.getItem('user_name') || 'Bạn';
 
     const DashboardView = role === 'Admin'
         ? <AdminDashboard userName={name} />
