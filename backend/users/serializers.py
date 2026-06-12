@@ -12,19 +12,23 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     def validate(self, attrs):
         # Let SimpleJWT handle the core password validation and token generation
         data = super().validate(attrs)
+        # createsuperuser command leaves the custom 'role' field empty or default
         user_role = 'Admin' if self.user.is_superuser else self.user.role
+        # Fallback to username if name is not provided, avoiding empty strings on UI
         display_name = self.user.name if self.user.name else self.user.username
+        # Safely check if the avatar exists before calling .url to prevent Server 500 errors
         avatar_url = self.user.avatar.url if self.user.avatar else None
+        # To save Frontend from doing Date parsing
         created_at_str = self.user.create_at.strftime('%d/%m/%Y') if self.user.create_at else 'Mới đây'
-        # Inject our custom user data into the response dictionary
         data['user'] = {
             'id': str(self.user.id),
             'username': self.user.username,
-            'email': self.user.email,  # Trường email quan trọng
+            'email': self.user.email,
             'name': display_name,
             'role': user_role,
             'avatar': avatar_url,
-            'created_at': created_at_str
+            'created_at': created_at_str,
+            'notif_enabled': getattr(self.user, 'notif_enabled', True) 
         }
         
         return data
