@@ -1,3 +1,4 @@
+import axios from 'axios';
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import logo from '../../assets/logo.png'; 
@@ -13,14 +14,14 @@ import {
 
 const Header = () => {
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-    
     const dropdownRef = useRef(null);
     const navigate = useNavigate();
 
-    // REASON: Retrieve user data from storage
     const role = localStorage.getItem('user_role') || sessionStorage.getItem('user_role') || 'User';
     const name = localStorage.getItem('user_name') || sessionStorage.getItem('user_name') || 'Bạn';
     const displayDate = localStorage.getItem('user_created_at') || sessionStorage.getItem('user_created_at') || 'Mới đây';
+    const initialNotifState = localStorage.getItem('user_notif_enabled') === 'true' || sessionStorage.getItem('user_notif_enabled') === 'true';
+    const [isNotifEnabled, setIsNotifEnabled] = useState(initialNotifState);
     const userAvatar = localStorage.getItem('user_avatar') || sessionStorage.getItem('user_avatar') || defaultAvatar;
     const displayRole = role === 'Admin' ? 'Quản trị viên' : 'Người dùng';
     // Handle outside click to close dropdown
@@ -38,6 +39,28 @@ const Header = () => {
         localStorage.clear();
         sessionStorage.clear();
         navigate('/login');
+    };
+
+    const handleToggleNotif = async (e) => {
+        e.stopPropagation();
+        const previousState = isNotifEnabled;
+        const newState = !previousState;
+        setIsNotifEnabled(newState);
+        localStorage.setItem('user_notif_enabled', newState.toString());
+        sessionStorage.setItem('user_notif_enabled', newState.toString());
+
+        try {
+            const token = localStorage.getItem('access_token') || sessionStorage.getItem('access_token');
+            await axios.patch('http://localhost:8000/api/users/toggle-notif/', {}, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+        } catch (error) {
+            console.error("Lỗi khi cập nhật thông báo:", error);
+            setIsNotifEnabled(previousState);
+            localStorage.setItem('user_notif_enabled', previousState.toString());
+            sessionStorage.setItem('user_notif_enabled', previousState.toString());
+            alert("Không thể cập nhật trạng thái thông báo!");
+        }
     };
 
     return (
@@ -116,7 +139,21 @@ const Header = () => {
                                 </div>
                                 <span>Trung tâm thông báo</span>
                             </Link>
-
+                            {/* Notification button */}
+                            <button 
+                                onClick={handleToggleNotif} // Gọi hàm API ở đây
+                                className="w-full flex items-center justify-between px-5 py-3.5 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors cursor-pointer"
+                            >
+                                <div className="flex items-center">
+                                    <div className="w-7 flex justify-start text-slate-400">
+                                        {isNotifEnabled ? <FaBell className="text-lg" /> : <FaBellSlash className="text-lg" />}
+                                    </div>
+                                    <span>Thông báo</span>
+                                </div>
+                                <div className={`w-8 h-4 rounded-full relative transition-colors ${isNotifEnabled ? 'bg-blue-500' : 'bg-slate-200'}`}>
+                                    <div className={`w-3 h-3 bg-white rounded-full absolute top-0.5 transition-all shadow-sm ${isNotifEnabled ? 'left-4.5 right-0.5' : 'left-0.5'}`}></div>
+                                </div>
+                            </button>
                             <Link to="/settings" onClick={() => setIsDropdownOpen(false)} className="flex items-center px-5 py-3.5 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-blue-600 transition-colors">
                                 {/* Hộp nhốt Icon */}
                                 <div className="w-7 flex justify-start text-slate-400">

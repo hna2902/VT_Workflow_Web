@@ -1,7 +1,7 @@
 from django.urls import path
 from rest_framework_simplejwt.views import TokenRefreshView
 from .serializers import CustomTokenObtainPairView
-from .views import PasswordResetConfirmView, PasswordResetRequestView, RegisterView
+from .views import PasswordResetConfirmView, PasswordResetRequestView, RegisterView, ToggleNotifView
 
 urlpatterns = [
     path('register/', RegisterView.as_view(), name='register'),
@@ -10,4 +10,6 @@ urlpatterns = [
 
     path('password-reset/', PasswordResetRequestView.as_view(), name='password_reset'),
     path('password-reset-confirm/', PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
+
+    path('toggle-notif/', ToggleNotifView.as_view(), name='toggle-notif'),
 ]

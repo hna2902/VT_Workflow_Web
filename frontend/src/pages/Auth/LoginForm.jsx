@@ -13,7 +13,7 @@ const Login = () => {
     const [rememberMe, setRememberMe] = useState(false);
     const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
     const navigate = useNavigate();
-
+    const notifStatus = response.data.user.notif_enabled ?? true;
     const handleLogin = async (e) => {
         e.preventDefault();
         setError('');
@@ -30,7 +30,9 @@ const Login = () => {
                 storage.setItem('refresh_token', response.data.refresh);
             }
             storage.setItem('user_name', response.data.user.name);
+            storage.setItem('user_email', response.data.user.email);
             storage.setItem('user_role', response.data.user.role);
+            storage.setItem('user_notif_enabled', String(notifStatus));
             storage.setItem('user_created_at', response.data.user.created_at);
             if (response.data.user.avatar) {
                 storage.setItem('user_avatar', 'http://localhost:8000' + response.data.user.avatar);
