@@ -1,6 +1,8 @@
 import uuid
 from django.db import models
 from django.contrib.auth.models import AbstractUser
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 
 # Users table
 # Custom User model extending Django's built-in AbstractUser
@@ -13,3 +15,8 @@ class User(AbstractUser):
     create_at = models.DateTimeField(auto_now_add=True)
     def __str__(self):
         return self.username
+    
+@receiver(post_save, sender=User)
+def ensure_superuser_is_admin(sender, instance, created, **kwargs):
+    if instance.is_superuser and instance.role != 'Admin':
+        sender.objects.filter(pk=instance.pk).update(role='Admin')

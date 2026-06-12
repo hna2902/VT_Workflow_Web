@@ -2,17 +2,19 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import logo from '../../assets/logo.png'; 
-import { FaUser, FaLock, FaIdCard } from 'react-icons/fa'; 
+import { FaUser, FaLock, FaIdCard, FaEnvelope, FaCheckCircle } from 'react-icons/fa';
+import Modal from '../../components/common/Modal';
 
 const RegisterForm = () => {
     // 1. State initialization
     const [name, setName] = useState('');
+    const [email, setEmail] = useState('');
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
-    
+    const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
     const navigate = useNavigate();
 
     // 2. Form submission handler
@@ -33,12 +35,12 @@ const RegisterForm = () => {
             await axios.post('http://localhost:8000/api/register/', {
                 username: username,
                 name: name,
+                email: email,
                 password: password
             });
 
             // Redirect on success
-            alert("Đăng ký thành công! Vui lòng đăng nhập.");
-            navigate('/login');
+            setIsSuccessModalOpen(true);
             
         } catch (err) {
             console.error("Register error:", err);
@@ -51,6 +53,11 @@ const RegisterForm = () => {
         } finally {
             setLoading(false);
         }
+    };
+
+    const handleModalClose = () => {
+        setIsSuccessModalOpen(false);
+        navigate('/login');
     };
 
     return (
@@ -117,7 +124,16 @@ const RegisterForm = () => {
                                 className="w-full pl-11 pr-4 py-3.5 text-slate-800 bg-slate-50 border rounded-full outline-none border-slate-200 focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-100 transition-all"
                             />
                         </div>
-
+                        {/* Email Input */}
+                        <div className="relative">
+                            <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-slate-400">
+                                <FaEnvelope />
+                            </div>
+                            <input 
+                                type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email"
+                                className="w-full pl-11 pr-4 py-3.5 text-slate-800 bg-slate-50 border rounded-full outline-none border-slate-200 focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-100 transition-all"
+                            />
+                        </div>
                         {/* Username Input */}
                         <div className="relative">
                             <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-slate-400">
@@ -169,7 +185,27 @@ const RegisterForm = () => {
                             </Link>
                         </p>
                     </div>
-
+                    {/* Popup Modal */}
+                    <Modal 
+                        isOpen={isSuccessModalOpen} 
+                        onClose={handleModalClose} 
+                        title="Đăng ký thành công"
+                    >
+                        <div className="flex flex-col items-center py-4">
+                            <FaCheckCircle className="text-6xl text-green-500 mb-4" />
+                            <p className="text-center text-slate-600 mb-6">
+                                Tài khoản của bạn đã được khởi tạo trên hệ thống. <br/>
+                                Vui lòng đăng nhập để bắt đầu sử dụng.
+                            </p>
+                            
+                            <button 
+                                onClick={handleModalClose}
+                                className="w-full py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition-colors"
+                            >
+                                Đến trang Đăng nhập
+                            </button>
+                        </div>
+                    </Modal>
                 </div>
             </div>
             

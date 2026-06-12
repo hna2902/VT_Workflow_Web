@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import logo from '../../assets/logo.png'; 
-import { FaEnvelope, FaLock } from 'react-icons/fa'; 
+import { FaUser, FaLock, FaIdCard, FaEnvelope, FaCheckCircle } from 'react-icons/fa';
+import Modal from '../../components/common/Modal';
 
 const Login = () => {
     const [username, setUsername] = useState('');
@@ -10,16 +11,15 @@ const Login = () => {
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const [rememberMe, setRememberMe] = useState(false);
-    
+    const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
     const navigate = useNavigate();
 
     const handleLogin = async (e) => {
         e.preventDefault();
         setError('');
         setLoading(true);
-
         try {
-            const response = await axios.post('http://localhost:8000/api/token/', {
+            const response = await axios.post('http://localhost:8000/api/login/', {
                 username: username,
                 password: password
             });
@@ -29,9 +29,19 @@ const Login = () => {
             if (response.data.refresh) {
                 storage.setItem('refresh_token', response.data.refresh);
             }
+            storage.setItem('user_name', response.data.user.name);
+            storage.setItem('user_role', response.data.user.role);
+            storage.setItem('user_created_at', response.data.user.created_at);
+            if (response.data.user.avatar) {
+                storage.setItem('user_avatar', 'http://localhost:8000' + response.data.user.avatar);
+            } else {
+                storage.removeItem('user_avatar'); // Không có ảnh thì xóa đi
+            }
 
-            navigate('/home');
-            
+            setIsSuccessModalOpen(true);
+            setTimeout(() => {
+                navigate('/home');
+            }, 1500);
         } catch (err) {
             console.error("Lỗi đăng nhập:", err);
             setError('Tài khoản hoặc mật khẩu không chính xác!');
@@ -85,7 +95,7 @@ const Login = () => {
                         {/* Username */}
                         <div className="relative">
                             <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-slate-400">
-                                <FaEnvelope />
+                                <FaUser />
                             </div>
                             <input 
                                 type="text" required value={username} onChange={(e) => setUsername(e.target.value)} placeholder="Tên đăng nhập"
@@ -137,7 +147,27 @@ const Login = () => {
                             </Link>
                         </p>
                     </div>
-
+                    {/* Popup Modal */}
+                    <Modal 
+                        isOpen={isSuccessModalOpen} 
+                        title="Xác thực thành công"
+                    >
+                        <div className="flex flex-col items-center py-6">
+                            {/* Thêm class animate-bounce để icon nảy lên nhìn vui mắt hơn */}
+                            <FaCheckCircle className="text-6xl text-green-500 mb-4 animate-bounce" />
+                            <p className="text-lg font-semibold text-slate-800 mb-1">
+                                Chào mừng trở lại!
+                            </p>
+                            <p className="text-sm text-slate-500 flex items-center gap-2">
+                                {/* Vòng xoay loading nhỏ để báo hiệu đang chuyển trang */}
+                                <svg className="animate-spin h-4 w-4 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                Đang chuyển hướng đến Trang chủ...
+                            </p>
+                        </div>
+                    </Modal>
                 </div>
             </div>
             

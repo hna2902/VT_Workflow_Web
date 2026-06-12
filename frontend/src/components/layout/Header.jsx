@@ -1,52 +1,153 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import logo from '../../assets/logo.png'; 
-// REASON: Import the default avatar image from the assets folder.
-// Change 'default-avatar.png' to your actual file name (e.g., 'avatar.jpg').
 import defaultAvatar from '../../assets/default-avatar.png'; 
-import { FaBell } from 'react-icons/fa';
+import { 
+    FaBell, 
+    FaCog, 
+    FaSignOutAlt, 
+    FaListAlt,
+    FaAngleDown,
+    FaCalendarAlt
+} from 'react-icons/fa';
 
 const Header = () => {
-  return (
-    // REASON: Applied the linear gradient from white (left) to deep blue (right).
-    <header className="flex items-center justify-between px-6 py-3 bg-gradient-to-r from-white to-blue-700 border-b border-slate-300 shrink-0 shadow-sm">
-      
-      {/* Logo container (Left side - White background) */}
-      <div className="flex items-center h-10 cursor-pointer">
-        <img src={logo} alt="VT Logo" className="object-contain h-full mr-2" />
-        
-        <span className="text-xl font-bold text-blue-800">
-            <span className="text-red-600">VT</span> Workflow
-        </span>
-      </div>
-      
-      {/* Right side container - Notifications & User Profile */}
-      {/* REASON: Using 'gap-6' to separate the Bell and the User Profile into two distinct interactive areas. */}
-      <div className="flex items-center gap-6">
-        
-        {/* 1. NOTIFICATION BELL (Moved to the left) */}
-        <div className="relative flex items-center justify-center w-10 h-10 text-white rounded-full cursor-pointer hover:bg-white/20 transition-colors">
-           <FaBell className="text-lg" />
-           {/* Red dot notification */}
-           <span className="absolute top-1 right-1 w-2.5 h-2.5 border border-blue-700 rounded-full bg-red-500"></span>
-        </div>
-        
-        {/* 2. USER PROFILE (Avatar + Name) */}
-        {/* REASON: Grouping avatar and name together. Added hover opacity to indicate it's clickable (e.g., to open a profile menu later). */}
-        <div className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity">
-           {/* User Name */}
-           <span className="font-medium text-white">Tên Nhân Viên</span>
-           {/* Avatar Image */}
-           <img 
-               src={defaultAvatar} 
-               alt="User Avatar" 
-               className="w-9 h-9 object-cover rounded-full border-2 border-white/50 shadow-sm" 
-           />
-        </div>
-        
-      </div>
-      
-    </header>
-  );
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    
+    const dropdownRef = useRef(null);
+    const navigate = useNavigate();
+
+    // REASON: Retrieve user data from storage
+    const role = localStorage.getItem('user_role') || sessionStorage.getItem('user_role') || 'User';
+    const name = localStorage.getItem('user_name') || sessionStorage.getItem('user_name') || 'Bạn';
+    const displayDate = localStorage.getItem('user_created_at') || sessionStorage.getItem('user_created_at') || 'Mới đây';
+    const userAvatar = localStorage.getItem('user_avatar') || sessionStorage.getItem('user_avatar') || defaultAvatar;
+    const displayRole = role === 'Admin' ? 'Quản trị viên' : 'Người dùng';
+    // Handle outside click to close dropdown
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+                setIsDropdownOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    const handleLogout = () => {
+        localStorage.clear();
+        sessionStorage.clear();
+        navigate('/login');
+    };
+
+    return (
+        <header className="relative z-50 flex items-center justify-between px-6 py-3 bg-gradient-to-r from-white to-blue-700 border-b border-slate-300 shrink-0 shadow-sm">
+            
+            {/* Logo */}
+            <Link to="/home" className="flex items-center h-10 cursor-pointer group">
+                <img src={logo} alt="VT Logo" className="object-contain h-full mr-2 group-hover:scale-105 transition-transform" />
+                <span className="text-xl font-bold text-blue-800">
+                    <span className="text-red-600">VT</span> Workflow
+                </span>
+            </Link>
+            
+            {/* Right Side */}
+            <div className="flex items-center gap-6">
+                
+                {/* Notification Bell */}
+                <button className="relative flex items-center justify-center w-10 h-10 text-white rounded-full cursor-pointer hover:bg-white/20 transition-colors">
+                    <FaBell className="text-lg" />
+                    <span className="absolute top-1 right-1 w-2.5 h-2.5 border border-blue-700 rounded-full bg-red-500"></span>
+                </button>
+                
+                {/* User Dropdown */}
+                <div className="relative" ref={dropdownRef}>
+                    <button 
+                        onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                        className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity"
+                    >
+                        <span className="font-medium text-white select-none">{name}</span>
+                        <div className="flex items-center gap-1">
+                            <img 
+                                src={userAvatar} 
+                                alt="User Avatar" 
+                                className="w-9 h-9 object-cover rounded-full border-2 border-white/50 shadow-sm" 
+                            />
+                            <FaAngleDown className={`text-white/80 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} />
+                        </div>
+                    </button>
+
+                    {/* Dropdown Menu */}
+                    {/* Bảng Menu Dropdown */}
+                    {isDropdownOpen && (
+                        <div className="absolute right-0 mt-4 w-64 bg-white rounded-xl shadow-xl border border-slate-200 overflow-hidden transform origin-top-right transition-all flex flex-col">
+                            
+                            {/* KHU VỰC 1: THÔNG TIN */}
+                            <div className="px-5 py-4 bg-slate-50/80">
+                                {/* Vai trò */}
+                                <div className="mb-4">
+                                    <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Vai trò hiện tại</p>
+                                    <p className="text-sm font-bold text-slate-800 flex items-center gap-2">
+                                        {displayRole}
+                                        {role === 'Admin' && <span className="px-2 py-0.5 text-[10px] uppercase tracking-wider bg-red-100 text-red-600 rounded-full">Admin</span>}
+                                    </p>
+                                </div>
+                                {/* Ngày tham gia */}
+                                <div>
+                                    <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Ngày tham gia</p>
+                                    {/* Nhốt Icon lịch vào hộp w-7 để thẳng hàng tuyệt đối với các nút bên dưới */}
+                                    <p className="text-sm font-medium text-slate-600 flex items-center">
+                                        <div className="w-7 flex justify-start text-slate-400">
+                                            <FaCalendarAlt className="text-lg" />
+                                        </div>
+                                        <span>{displayDate}</span>
+                                    </p>
+                                </div>
+                            </div>
+
+                            {/* ĐƯỜNG KẺ 1 (Dùng div riêng thay vì border để kiểm soát 100% độ dày) */}
+                            <div className="h-px bg-slate-100 w-full"></div>
+
+                            {/* KHU VỰC 2: MENU ĐIỀU HƯỚNG */}
+                            <Link to="/notifications" onClick={() => setIsDropdownOpen(false)} className="flex items-center px-5 py-3.5 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-blue-600 transition-colors">
+                                {/* Hộp nhốt Icon */}
+                                <div className="w-7 flex justify-start text-slate-400">
+                                    <FaListAlt className="text-lg" />
+                                </div>
+                                <span>Trung tâm thông báo</span>
+                            </Link>
+
+                            <Link to="/settings" onClick={() => setIsDropdownOpen(false)} className="flex items-center px-5 py-3.5 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-blue-600 transition-colors">
+                                {/* Hộp nhốt Icon */}
+                                <div className="w-7 flex justify-start text-slate-400">
+                                    <FaCog className="text-lg" />
+                                </div>
+                                <span>Tài khoản</span>
+                            </Link>
+
+                            {/* ĐƯỜNG KẺ 2 */}
+                            <div className="h-px bg-slate-100 w-full"></div>
+
+                            {/* KHU VỰC 3: ĐĂNG XUẤT */}
+                            {/* Dùng text-left để ép thẻ button vô kỷ luật phải tuân thủ lề */}
+                            <button 
+                                onClick={handleLogout}
+                                // SỬA: Thêm cursor-pointer và đổi hover:bg-red-50 thành hover:bg-red-100
+                                className="w-full flex items-center text-left px-5 py-3.5 text-sm font-bold text-red-600 hover:bg-red-100 hover:text-red-700 transition-colors cursor-pointer"
+                            >
+                                {/* Hộp nhốt Icon */}
+                                <div className="w-7 flex justify-start text-red-600">
+                                    <FaSignOutAlt className="text-lg" />
+                                </div>
+                                <span>Đăng xuất</span>
+                            </button>
+
+                        </div>
+                    )}
+                </div>
+            </div>
+        </header>
+    );
 };
 
 export default Header;

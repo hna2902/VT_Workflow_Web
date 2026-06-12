@@ -14,12 +14,6 @@ const Modal = ({ isOpen, onClose, title, children }) => {
         {/* Modal header with title and close button */}
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-bold text-slate-800">{title}</h2>
-          <button 
-            onClick={onClose}
-            className="text-2xl transition-colors text-slate-400 hover:text-red-500"
-          >
-            &times;
-          </button>
         </div>
 
         {/* Dynamic content injection point */}

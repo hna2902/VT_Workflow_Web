@@ -1,6 +1,6 @@
 import React from 'react';
 // Import routing components from react-router-dom
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from 'react-router-dom';
 
 // Import common layout components
 import Header from './components/layout/Header';

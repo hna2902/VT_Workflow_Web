@@ -8,12 +8,16 @@ const Sidebar = () => {
     const [loading, setLoading] = useState(true);
     const [isOpen, setIsOpen] = useState(false);
 
-    const currentUserRole = 'Admin'; 
+    // LẤY DỮ LIỆU THẬT TỪ KHO LƯU TRỮ (Thay vì dùng mock data)
+    // WHY: Ensures the "Quản lý danh mục" button is strictly hidden from regular Users.
+    const currentUserRole = localStorage.getItem('user_role') || sessionStorage.getItem('user_role') || 'User'; 
 
     useEffect(() => {
         const fetchCategories = async () => {
             try {
-                const token = localStorage.getItem('access_token');
+                // Ensure we check both storages for the token
+                const token = localStorage.getItem('access_token') || sessionStorage.getItem('access_token');
+                
                 const response = await axios.get('http://localhost:8000/api/categories/', {
                     headers: { Authorization: `Bearer ${token}` }
                 });
@@ -41,7 +45,6 @@ const Sidebar = () => {
 
     return (
         <>
-            {/* Extend button */}
             <button 
                 onClick={() => setIsOpen(!isOpen)}
                 className="md:hidden fixed bottom-6 right-6 z-50 flex items-center justify-center w-14 h-14 text-2xl text-white bg-blue-600 rounded-full shadow-xl hover:bg-blue-700 transition-transform active:scale-95"
@@ -49,7 +52,6 @@ const Sidebar = () => {
                 {isOpen ? '✕' : '☰'}
             </button>
 
-            {/* Backdrop */}
             {isOpen && (
                 <div 
                     className="absolute inset-0 z-30 bg-black/40 md:hidden transition-opacity backdrop-blur-sm"
@@ -57,15 +59,14 @@ const Sidebar = () => {
                 />
             )}
 
-            {/* Sidebar */}
             <aside 
-                className={`absolute md:relative z-40 flex flex-col w-72 h-full border-r bg-slate-100 border-slate-300 shrink-0 shadow-2xl md:shadow-inner transition-transform duration-300 ease-in-out ${
+                className={`absolute md:relative z-40 flex flex-col w-72 h-full border-r bg-slate-50 border-slate-300 shrink-0 shadow-2xl md:shadow-inner transition-transform duration-300 ease-in-out ${
                     isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
                 }`}
             >
                 
-                {/* HEADER */}
-                <div className="p-4 border-b border-slate-300 shrink-0 bg-slate-100">
+                {/* HEADER SỬA MÀU: Đổi thành bg-slate-200 để làm xám hơn một chút */}
+                <div className="p-4 border-b border-slate-300 shrink-0 bg-slate-200">
                     <input 
                         type="text" 
                         placeholder="Tìm danh mục..." 
@@ -75,7 +76,7 @@ const Sidebar = () => {
                     />
                 </div>
 
-                {/* BODY */}
+                {/* THÂN SIDEBAR (Danh sách) */}
                 <div className="flex-1 overflow-y-auto">
                     {loading ? (
                         <div className="px-4 py-6 text-sm text-center italic text-slate-500">
@@ -92,7 +93,7 @@ const Sidebar = () => {
                                             className={({ isActive }) => 
                                                 `block px-6 py-3.5 transition-colors ${
                                                     isActive 
-                                                        ? 'bg-blue-200 text-blue-800 border-r-4 border-blue-600 font-bold' 
+                                                        ? 'bg-blue-100 text-blue-800 border-r-4 border-blue-600 font-bold shadow-inner' 
                                                         : 'text-slate-600 hover:bg-slate-200 hover:text-blue-600 font-medium'
                                                 }`
                                             }
