@@ -7,7 +7,7 @@ const AdminDashboard = ({ userName }) => (
     <div className="p-6 lg:p-8 flex flex-col items-center">
         {/* SỬA: Đổi text thành màu trắng, đổi màu nhấn thành xanh dương sáng (blue-400) để nổi trên nền tối */}
         <h1 className="text-4xl md:text-5xl font-extrabold text-white tracking-tight text-center mb-10 drop-shadow-lg">
-            Chào mừng quay lại, <span className="text-blue-400">{userName}</span>! 👋
+            Chào mừng quay lại, <span className="text-blue-400">{userName}</span>!
         </h1>
 
         {/* Khung Quick Actions: Giữ nền trắng để tạo độ tương phản mạnh mẽ với background tối */}

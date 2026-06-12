@@ -15,13 +15,16 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         user_role = 'Admin' if self.user.is_superuser else self.user.role
         display_name = self.user.name if self.user.name else self.user.username
         avatar_url = self.user.avatar.url if self.user.avatar else None
+        created_at_str = self.user.create_at.strftime('%d/%m/%Y') if self.user.create_at else 'Mới đây'
         # Inject our custom user data into the response dictionary
         data['user'] = {
             'id': str(self.user.id),
             'username': self.user.username,
-            'name': self.user.name,
-            'role': self.user.role,
-            # We will handle avatar later when you implement image uploads
+            'email': self.user.email,  # Trường email quan trọng
+            'name': display_name,
+            'role': user_role,
+            'avatar': avatar_url,
+            'created_at': created_at_str
         }
         
         return data
