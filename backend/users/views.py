@@ -8,7 +8,7 @@ from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.utils.encoding import force_bytes, force_str
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from django.core.mail import send_mail
-
+from rest_framework.permissions import IsAuthenticated
 from .serializers import PasswordResetRequestSerializer, RegisterSerializer, SetNewPasswordSerializer
 
 User = get_user_model()
@@ -62,3 +62,16 @@ class PasswordResetConfirmView(APIView):
             return Response({"message": "Password reset successful."}, status=status.HTTP_200_OK)
             
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+class ToggleNotifView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def patch(self, request):
+        user = request.user
+        user.notif_enabled = not user.notif_enabled
+        user.save()
+        
+        return Response({
+            "message": "Cập nhật thành công",
+            "notif_enabled": user.notif_enabled
+        })
