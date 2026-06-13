@@ -5,10 +5,12 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
+from django.contrib.auth.hashers import check_password
 from django.utils.encoding import force_bytes, force_str
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from django.core.mail import send_mail
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.parsers import MultiPartParser, FormParser
 from .serializers import PasswordResetRequestSerializer, RegisterSerializer, SetNewPasswordSerializer
 
 User = get_user_model()
@@ -74,4 +76,66 @@ class ToggleNotifView(APIView):
         return Response({
             "message": "Cập nhật thành công",
             "notif_enabled": user.notif_enabled
+        })
+    
+class UpdateEmailView(APIView):
+    # Only logged-in users can access this endpoint.
+    permission_classes = [IsAuthenticated]
+
+    def patch(self, request):
+        new_email = request.data.get('email')
+        
+        # Basic validation to ensure the frontend sends the required data.
+        if not new_email:
+            return Response({"error": "Email is required"}, status=400)
+            
+        request.user.email = new_email
+        request.user.save()
+        
+        return Response({
+            "message": "Email updated successfully",
+            "email": request.user.email
+        })
+
+# ==========================================
+# 2. CHANGE PASSWORD API
+# ==========================================
+class ChangePasswordView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def patch(self, request):
+        user = request.user
+        current_password = request.data.get('currentPassword')
+        new_password = request.data.get('newPassword')
+
+        # REASON: Security measure. We MUST verify the old password using Django's 
+        # built-in check_password function before allowing a password change.
+        if not user.check_password(current_password):
+            return Response({"error": "Incorrect current password"}, status=400)
+
+        # REASON: Never save raw passwords. set_password() handles the hashing securely.
+        user.set_password(new_password)
+        user.save()
+        
+        return Response({"message": "Password changed successfully"})
+
+# ==========================================
+# 3. UPDATE AVATAR API
+# ==========================================
+class UpdateAvatarView(APIView):
+    permission_classes = [IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser]
+
+    def patch(self, request):
+        avatar_file = request.FILES.get('avatar')
+        
+        if not avatar_file:
+            return Response({"error": "No image file provided"}, status=400)
+            
+        request.user.avatar = avatar_file
+        request.user.save()
+
+        return Response({
+            "message": "Avatar updated successfully",
+            "avatar": request.user.avatar.url
         })
