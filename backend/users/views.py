@@ -23,6 +23,7 @@ class RegisterView(generics.CreateAPIView):
 
 class PasswordResetRequestView(APIView):
     permission_classes = (AllowAny,)
+    
     def post(self, request):
         serializer = PasswordResetRequestSerializer(data=request.data)
         if serializer.is_valid():
