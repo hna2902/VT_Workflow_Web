@@ -32,7 +32,7 @@ const RegisterForm = () => {
 
         try {
             // Post data to Django backend
-            await axios.post('http://localhost:8000/api/register/', {
+            await axios.post('http://localhost:8000/api/users/register/', {
                 username: username,
                 name: name,
                 email: email,

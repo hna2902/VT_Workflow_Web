@@ -29,7 +29,7 @@ const CategoryIndex = () => {
     const fetchCategories = async () => {
         try {
             const token = localStorage.getItem('access_token');
-            const response = await axios.get('http://localhost:8000/api/categories/', {
+            const response = await axios.get('http://localhost:8000/api/processes/categories/', {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setCategories(response.data);
@@ -65,7 +65,7 @@ const CategoryIndex = () => {
     const handleSaveEdit = async (id) => {
         try {
             const token = localStorage.getItem('access_token');
-            await axios.put(`http://localhost:8000/api/categories/${id}/`, 
+            await axios.put(`http://localhost:8000/api/processes/categories/${id}/`, 
                 { title: editTitle }, 
                 { headers: { Authorization: `Bearer ${token}` } }
             );
@@ -91,10 +91,6 @@ const CategoryIndex = () => {
         setCurrentPage(1);
     }, [searchTerm]);
 
-
-    // ==========================================
-    // KHU VỰC 4: RENDER (Vẽ giao diện - CHỈ CÓ 1 LỆNH RETURN Ở ĐÂY)
-    // ==========================================
     return (
         <div className="flex flex-col h-full bg-slate-100">
             

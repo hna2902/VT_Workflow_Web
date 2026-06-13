@@ -124,3 +124,21 @@ class UpdateAvatarView(APIView):
             "message": "Avatar updated successfully",
             "avatar": request.user.avatar.url
         })
+    
+class UpdateNameView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def patch(self, request):
+        new_name = request.data.get('name')
+        
+        # REASON: Validate to prevent empty names or names with only spaces
+        if not new_name or len(new_name.strip()) == 0:
+            return Response({"error": "Tên không được để trống"}, status=400)
+            
+        request.user.name = new_name.strip()
+        request.user.save()
+        
+        return Response({
+            "message": "Cập nhật tên thành công",
+            "name": request.user.name
+        })

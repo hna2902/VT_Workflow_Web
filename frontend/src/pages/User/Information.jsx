@@ -1,7 +1,6 @@
 import React, { useState, useRef } from 'react';
 import axios from 'axios';
 import defaultAvatar from '../../assets/default-avatar.png';
-import ChangeEmailForm from './ChangeEmailForm';
 import ChangePasswordForm from './ChangePasswordForm';
 import Modal from '../../components/common/Modal';
 import { 
@@ -13,15 +12,15 @@ import {
     FaRegUserCircle, 
     FaRegCheckCircle,
     FaCheckCircle,
-    FaTimesCircle
+    FaTimesCircle,
+    FaCheck,
+    FaTimes
 } from 'react-icons/fa';
 
 const Information = () => {
     
-    const name = localStorage.getItem('user_name') || sessionStorage.getItem('user_name') || 'Người dùng';
     const role = localStorage.getItem('user_role') || sessionStorage.getItem('user_role') || 'User';
     const username = localStorage.getItem('user_username') || sessionStorage.getItem('user_username') || 'username';
-    const email = localStorage.getItem('user_email') || sessionStorage.getItem('user_email') || 'Chưa cập nhật email';
     const fileInputRef = useRef(null);
     const createdAt = localStorage.getItem('user_created_at') || sessionStorage.getItem('user_created_at') || 'Mới đây';
     const initialNotifState = localStorage.getItem('user_notif_enabled') === 'true' || sessionStorage.getItem('user_notif_enabled') === 'true';
@@ -30,8 +29,15 @@ const Information = () => {
     const [isNotifEnabled, setIsNotifEnabled] = useState(initialNotifState);
     const [avatar, setAvatar] = useState(initialAvatar);
     const [alertModal, setAlertModal] = useState({isOpen: false,title: '',message: '',type: 'info'});
-    const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
     const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+    // Name State
+    const [name, setName] = useState(localStorage.getItem('user_name') || sessionStorage.getItem('user_name') || 'Người dùng');
+    const [isEditingName, setIsEditingName] = useState(false);
+    const [tempName, setTempName] = useState('');
+    // Email State
+    const [email, setEmail] = useState(localStorage.getItem('user_email') || sessionStorage.getItem('user_email') || 'Chưa cập nhật email');
+    const [isEditingEmail, setIsEditingEmail] = useState(false);
+    const [tempEmail, setTempEmail] = useState('');
 
     const showAlert = (title, message, type = 'info') => {setAlertModal({ isOpen: true, title, message, type });};
     const closeAlert = () => {setAlertModal({ ...alertModal, isOpen: false });};
@@ -66,10 +72,14 @@ const Information = () => {
                     'Content-Type': 'multipart/form-data'
                 }
             });
-            const serverAvatarUrl = response.data.avatar;
+            let serverAvatarUrl = response.data.avatar;
+            if (!serverAvatarUrl.startsWith('http')) {
+                serverAvatarUrl = 'http://localhost:8000' + serverAvatarUrl;
+            }
             setAvatar(serverAvatarUrl); 
             localStorage.setItem('user_avatar', serverAvatarUrl);
             sessionStorage.setItem('user_avatar', serverAvatarUrl);
+            window.dispatchEvent(new Event('avatarUpdated'));
             showAlert("Thành công", "Cập nhật ảnh đại diện thành công", "success");
 
         } catch (error) {
@@ -101,9 +111,45 @@ const Information = () => {
         }
     };
 
-    const handleUpdateEmail = (newEmail) => {
-        console.log("Calls change Mail API:", newEmail);
-        setIsEmailModalOpen(false);
+    const handleUpdateNameInline = async () => {
+        if (!tempName.trim()) {
+            showAlert("Lỗi", "Tên không được để trống!", "error");
+            return;
+        }
+        try {
+            const token = localStorage.getItem('access_token') || sessionStorage.getItem('access_token');
+            const response = await axios.patch('http://localhost:8000/api/users/update-name/', 
+                { name: tempName }, { headers: { Authorization: `Bearer ${token}` } }
+            );
+            
+            // Success: Update real state, storage, and close edit mode
+            setName(response.data.name);
+            localStorage.setItem('user_name', response.data.name);
+            sessionStorage.setItem('user_name', response.data.name);
+            setIsEditingName(false);
+            showAlert("Thành công", "Đã cập nhật tên hiển thị!", "success");
+        } catch (error) {
+            showAlert("Lỗi", "Không thể cập nhật tên!", "error");
+        }
+    };
+
+    const handleUpdateEmailInline = async () => {
+        if (!tempEmail.trim()) return;
+        try {
+            const token = localStorage.getItem('access_token') || sessionStorage.getItem('access_token');
+            const response = await axios.patch('http://localhost:8000/api/users/update-email/', 
+                { email: tempEmail }, { headers: { Authorization: `Bearer ${token}` } }
+            );
+            
+            setEmail(response.data.email);
+            localStorage.setItem('user_email', response.data.email);
+            sessionStorage.setItem('user_email', response.data.email);
+            setIsEditingEmail(false);
+            showAlert("Thành công", "Đã cập nhật địa chỉ Email!", "success");
+        } catch (error) {
+            const errorMsg = error.response?.data?.error || "Không thể cập nhật Email!";
+            showAlert("Lỗi", errorMsg, "error");
+        }
     };
 
     const handleUpdatePassword = async (passwords) => {
@@ -179,7 +225,35 @@ const Information = () => {
                                 </button>
                             </div>
                         </div>
-                        <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 text-center break-all">{name}</h2>
+                        {isEditingName ? (
+                        // REASON: Edit Mode - Shows an input field with Save and Cancel buttons
+                        <div className="flex items-center justify-center gap-2 px-4 mt-2 w-full">
+                            <input 
+                                type="text"
+                                value={tempName}
+                                onChange={(e) => setTempName(e.target.value)}
+                                autoFocus
+                                className="w-full text-xl sm:text-2xl font-extrabold text-slate-900 text-center bg-slate-50 border-b-2 border-blue-500 focus:outline-none rounded-t-md px-1"
+                            />
+                            <button onClick={handleUpdateNameInline} className="p-2 text-white bg-green-500 hover:bg-green-600 rounded-full shadow-sm active:scale-95 transition-all">
+                                <FaCheck size={12} />
+                            </button>
+                            <button onClick={() => setIsEditingName(false)} className="p-2 text-slate-500 bg-slate-200 hover:bg-slate-300 rounded-full shadow-sm active:scale-95 transition-all">
+                                <FaTimes size={12} />
+                            </button>
+                        </div>
+                        ) : (
+                            // View Mode - Shows normal text and Pen icon
+                            <div className="flex items-center justify-center gap-2 px-4 mt-2">
+                                <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 text-center break-all">{name}</h2>
+                                <button 
+                                    onClick={() => { setTempName(name); setIsEditingName(true); }}
+                                    className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-all cursor-pointer shrink-0"
+                                >
+                                    <FaPen size={14} />
+                                </button>
+                            </div>
+                        )}
                         <p className="text-slate-400 font-semibold text-sm sm:text-base mt-0.5 break-all">@{username}</p>
                         <div className={`mt-4 px-4 sm:px-5 py-1 sm:py-1.5 rounded-full ${
                             role === 'Admin' ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700'
@@ -193,16 +267,43 @@ const Information = () => {
                     <div className="md:col-span-2 space-y-6">
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                             <InfoCard 
-                                icon={FaAt} label="Địa chỉ Email" value={email}
-                                    color={{bg: "bg-blue-50", text: "text-blue-600"}}
-                                    actionElement={
+                                icon={FaAt} label="Địa chỉ Email"
+                                color={{bg: "bg-blue-50", text: "text-blue-600"}}
+                                // Nếu đang edit thì hiện ô Input, ngược lại hiện text bình thường
+                                value={
+                                    isEditingEmail ? (
+                                        <input 
+                                            type="email"
+                                            value={tempEmail}
+                                            onChange={(e) => setTempEmail(e.target.value)}
+                                            autoFocus
+                                            className="w-full text-base sm:text-lg font-extrabold text-slate-900 bg-blue-50/50 border-b-2 border-blue-500 focus:outline-none px-1 rounded-t-sm"
+                                        />
+                                    ) : (
+                                        email
+                                    )
+                                }
+                                actionElement={
+                                    isEditingEmail ? (
+                                        // REASON: Action buttons for Edit Mode (Save / Cancel)
+                                        <div className="flex gap-1">
+                                            <button onClick={handleUpdateEmailInline} className="p-1.5 text-white bg-green-500 hover:bg-green-600 rounded-full shadow-sm active:scale-95 transition-all">
+                                                <FaCheck size={12} />
+                                            </button>
+                                            <button onClick={() => setIsEditingEmail(false)} className="p-1.5 text-slate-500 bg-slate-200 hover:bg-slate-300 rounded-full shadow-sm active:scale-95 transition-all">
+                                                <FaTimes size={12} />
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        // Action button for View Mode (Pen icon)
                                         <button 
-                                            onClick={() => setIsEmailModalOpen(true)} // Mở Modal Email
+                                            onClick={() => { setTempEmail(email); setIsEditingEmail(true); }}
                                             className="p-2 text-slate-300 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-all cursor-pointer"
                                         >
                                             <FaPen size={20} />
                                         </button>
-                                    }
+                                    )
+                                }
                             />
 
                             <InfoCard 
@@ -263,17 +364,6 @@ const Information = () => {
                     </div>
                 </div>
             </div>
-            <Modal 
-                isOpen={isEmailModalOpen} 
-                onClose={() => setIsEmailModalOpen(false)} 
-                title="Thay đổi Email"
-            >
-                <ChangeEmailForm 
-                    currentEmail={email} 
-                    onClose={() => setIsEmailModalOpen(false)} 
-                    onSubmit={handleUpdateEmail} 
-                />
-            </Modal>
 
             <Modal 
                 isOpen={isPasswordModalOpen} 

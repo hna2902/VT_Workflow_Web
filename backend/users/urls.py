@@ -8,7 +8,8 @@ from .views import (
     ToggleNotifView,
     UpdateEmailView, 
     ChangePasswordView, 
-    UpdateAvatarView
+    UpdateAvatarView,
+    UpdateNameView
 )
 
 urlpatterns = [
@@ -16,6 +17,7 @@ urlpatterns = [
     path('login/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh_'),
 
+    path('update-name/', UpdateNameView.as_view(), name='update-name'),
     path('update-email/', UpdateEmailView.as_view(), name='update-email'),
     path('change-password/', ChangePasswordView.as_view(), name='change-password'),
     path('update-avatar/', UpdateAvatarView.as_view(), name='update-avatar'),

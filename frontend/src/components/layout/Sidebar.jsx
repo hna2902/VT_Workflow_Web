@@ -7,9 +7,7 @@ const Sidebar = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [loading, setLoading] = useState(true);
     const [isOpen, setIsOpen] = useState(false);
-
-    // LẤY DỮ LIỆU THẬT TỪ KHO LƯU TRỮ (Thay vì dùng mock data)
-    // WHY: Ensures the "Quản lý danh mục" button is strictly hidden from regular Users.
+    
     const currentUserRole = localStorage.getItem('user_role') || sessionStorage.getItem('user_role') || 'User'; 
 
     useEffect(() => {
@@ -18,7 +16,7 @@ const Sidebar = () => {
                 // Ensure we check both storages for the token
                 const token = localStorage.getItem('access_token') || sessionStorage.getItem('access_token');
                 
-                const response = await axios.get('http://localhost:8000/api/categories/', {
+                const response = await axios.get('http://localhost:8000/api/processes/categories/', {
                     headers: { Authorization: `Bearer ${token}` }
                 });
                 

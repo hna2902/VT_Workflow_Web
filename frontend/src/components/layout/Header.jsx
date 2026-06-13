@@ -22,7 +22,9 @@ const Header = () => {
     const displayDate = localStorage.getItem('user_created_at') || sessionStorage.getItem('user_created_at') || 'Mới đây';
     const initialNotifState = localStorage.getItem('user_notif_enabled') === 'true' || sessionStorage.getItem('user_notif_enabled') === 'true';
     const [isNotifEnabled, setIsNotifEnabled] = useState(initialNotifState);
-    const userAvatar = localStorage.getItem('user_avatar') || sessionStorage.getItem('user_avatar') || defaultAvatar;
+    const [userAvatar, setAvatar] = useState(
+        localStorage.getItem('user_avatar') || sessionStorage.getItem('user_avatar') || defaultAvatar
+    );
     const displayRole = role === 'Admin' ? 'Quản trị viên' : 'Người dùng';
     // Handle outside click to close dropdown
     useEffect(() => {
@@ -33,6 +35,16 @@ const Header = () => {
         };
         document.addEventListener('mousedown', handleClickOutside);
         return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    useEffect(() => {
+        const handleAvatarChange = () => {
+            setAvatar(localStorage.getItem('user_avatar') || sessionStorage.getItem('user_avatar') || defaultAvatar);
+        };
+        window.addEventListener('avatarUpdated', handleAvatarChange);
+        return () => {
+            window.removeEventListener('avatarUpdated', handleAvatarChange);
+        };
     }, []);
 
     const handleLogout = () => {

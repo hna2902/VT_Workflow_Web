@@ -38,7 +38,7 @@ const CategoryForm = ({ onSuccess }) => {
         e.preventDefault();
         try {
             const token = localStorage.getItem('access_token');
-            await axios.post('http://localhost:8000/api/categories/', formData, {
+            await axios.post('http://localhost:8000/api/processes/categories/', formData, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             onSuccess(); // Gọi hàm tải lại danh sách và đóng modal
