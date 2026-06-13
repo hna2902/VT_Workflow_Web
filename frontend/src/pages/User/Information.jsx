@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import axios from 'axios'; // Import axios để gọi API cho nút gạt
+import React, { useState, useRef } from 'react';
+import axios from 'axios';
 import defaultAvatar from '../../assets/default-avatar.png';
 import ChangeEmailForm from './ChangeEmailForm';
 import ChangePasswordForm from './ChangePasswordForm';
@@ -11,34 +11,82 @@ import {
     FaPen, 
     FaAt, 
     FaRegUserCircle, 
-    FaRegCheckCircle 
+    FaRegCheckCircle,
+    FaCheckCircle,
+    FaTimesCircle
 } from 'react-icons/fa';
 
 const Information = () => {
-    // 1. LẤY DỮ LIỆU TỪ KHO
+    
     const name = localStorage.getItem('user_name') || sessionStorage.getItem('user_name') || 'Người dùng';
     const role = localStorage.getItem('user_role') || sessionStorage.getItem('user_role') || 'User';
     const username = localStorage.getItem('user_username') || sessionStorage.getItem('user_username') || 'username';
     const email = localStorage.getItem('user_email') || sessionStorage.getItem('user_email') || 'Chưa cập nhật email';
-    const avatar = localStorage.getItem('user_avatar') || sessionStorage.getItem('user_avatar') || defaultAvatar;
+    const fileInputRef = useRef(null);
     const createdAt = localStorage.getItem('user_created_at') || sessionStorage.getItem('user_created_at') || 'Mới đây';
+    const initialNotifState = localStorage.getItem('user_notif_enabled') === 'true' || sessionStorage.getItem('user_notif_enabled') === 'true';
+    const initialAvatar = localStorage.getItem('user_avatar') || sessionStorage.getItem('user_avatar') || defaultAvatar;
     
-    // 2. STATE CHO NÚT THÔNG BÁO (Lấy giá trị ban đầu từ Storage)
-    const initialNotifState = localStorage.getItem('user_notif_enabled') === 'true' || 
-                              sessionStorage.getItem('user_notif_enabled') === 'true';
     const [isNotifEnabled, setIsNotifEnabled] = useState(initialNotifState);
+    const [avatar, setAvatar] = useState(initialAvatar);
+    const [alertModal, setAlertModal] = useState({isOpen: false,title: '',message: '',type: 'info'});
     const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
     const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
-    // 3. HÀM GỌI API LẬT TRẠNG THÁI THÔNG BÁO (Tương tự Header)
+
+    const showAlert = (title, message, type = 'info') => {setAlertModal({ isOpen: true, title, message, type });};
+    const closeAlert = () => {setAlertModal({ ...alertModal, isOpen: false });};
+
+    const handleAvatarClick = () => {
+        fileInputRef.current.click();
+    };
+
+    const handleFileChange = async (event) => {
+
+        const file = event.target.files[0];
+        if (!file) return;
+        if (!file.type.startsWith('image/')) {
+            showAlert("Thất bại", "Vui lòng chọn đúng định dạng", "error");
+            return;
+        }
+        if (file.size > 2 * 1024 * 1024) {
+            showAlert("Thất bại", "Vui lòng chọn ảnh nhỏ hơn 2MB", "error");
+            return;
+        }
+
+        const previousAvatar = avatar;
+        const tempUrl = URL.createObjectURL(file);
+        setAvatar(tempUrl); 
+        const formData = new FormData();
+        formData.append('avatar', file);
+        try {
+            const token = localStorage.getItem('access_token') || sessionStorage.getItem('access_token');
+            const response = await axios.patch('http://localhost:8000/api/users/update-avatar/', formData, {
+                headers: { 
+                    Authorization: `Bearer ${token}`,
+                    'Content-Type': 'multipart/form-data'
+                }
+            });
+            const serverAvatarUrl = response.data.avatar;
+            setAvatar(serverAvatarUrl); 
+            localStorage.setItem('user_avatar', serverAvatarUrl);
+            sessionStorage.setItem('user_avatar', serverAvatarUrl);
+            showAlert("Thành công", "Cập nhật ảnh đại diện thành công", "success");
+
+        } catch (error) {
+            console.error("Lỗi Upload Avatar:", error);
+            setAvatar(previousAvatar);
+            showAlert("Upload thất bại", "Không thể upload ảnh đại diện. Vui lòng thử lại", "error");
+        } finally {
+            event.target.value = null;
+        }
+    };
+
     const handleToggleNotif = async () => {
         const previousState = isNotifEnabled;
         const newState = !previousState;
-        
-        // Optimistic UI: Đổi giao diện và lưu kho ngay lập tức
         setIsNotifEnabled(newState);
         localStorage.setItem('user_notif_enabled', newState.toString());
         sessionStorage.setItem('user_notif_enabled', newState.toString());
-
         try {
             const token = localStorage.getItem('access_token') || sessionStorage.getItem('access_token');
             await axios.patch('http://localhost:8000/api/users/toggle-notif/', {}, {
@@ -46,11 +94,10 @@ const Information = () => {
             });
         } catch (error) {
             console.error("Lỗi khi cập nhật thông báo:", error);
-            // Revert nếu lỗi
             setIsNotifEnabled(previousState);
             localStorage.setItem('user_notif_enabled', previousState.toString());
             sessionStorage.setItem('user_notif_enabled', previousState.toString());
-            alert("Không thể cập nhật trạng thái thông báo!");
+            showAlert("Lỗi hệ thống", "Không thể cập nhật trạng thái thông báo!", "error");
         }
     };
 
@@ -59,9 +106,35 @@ const Information = () => {
         setIsEmailModalOpen(false);
     };
 
-    const handleUpdatePassword = (passwords) => {
-        console.log("Calls change Password API:", passwords);
-        setIsPasswordModalOpen(false);
+    const handleUpdatePassword = async (passwords) => {
+        if (passwords.newPassword !== passwords.confirmPassword) {
+            showAlert("Lỗi nhập liệu", "Mật khẩu mới và xác nhận mật khẩu không khớp nhau!", "error");
+            return;
+        }
+        try {
+            const token = localStorage.getItem('access_token') || sessionStorage.getItem('access_token');
+            const response = await axios.patch('http://localhost:8000/api/users/change-password/', {
+                currentPassword: passwords.currentPassword,
+                newPassword: passwords.newPassword
+            }, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            setIsPasswordModalOpen(false);
+            showAlert("Thành công", "Đổi mật khẩu thành công! Vui lòng dùng mật khẩu mới cho lần đăng nhập sau.", "success");
+
+        } catch (error) {
+            console.error("Lỗi đổi mật khẩu:", error);
+            if (error.response && error.response.data && error.response.data.error) {
+                const backendError = error.response.data.error;
+                if (backendError === "Incorrect current password") {
+                    showAlert("Lỗi xác thực", "Mật khẩu hiện tại bạn nhập không chính xác!", "error");
+                } else {
+                    showAlert("Lỗi thao tác", backendError, "error");
+                }
+            } else {
+                showAlert("Lỗi hệ thống", "Không thể kết nối đến máy chủ. Vui lòng thử lại sau!", "error");
+            }
+        }
     };
 
     const InfoCard = ({ icon: Icon, label, value, color, actionElement }) => (
@@ -94,7 +167,7 @@ const Information = () => {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 items-start">
                     <div className="md:col-span-1 bg-white p-6 sm:p-8 rounded-3xl shadow-sm border border-slate-100 flex flex-col items-center">
                         <div className="relative mb-4 sm:mb-6">
-                            <div className="p-2 bg-white rounded-full shadow-inner border border-slate-100 group cursor-pointer">
+                            <div className="p-2 bg-white rounded-full shadow-inner border border-slate-100 group cursor-pointer" onClick={handleAvatarClick}>
                                 <img 
                                     src={avatar} 
                                     alt="User Avatar" 
@@ -212,6 +285,40 @@ const Information = () => {
                     onSubmit={handleUpdatePassword} 
                 />
             </Modal>
+
+            <Modal 
+                isOpen={alertModal.isOpen} 
+                onClose={closeAlert} 
+                title={alertModal.title}
+            >
+                <div className="flex flex-col items-center py-6 px-4">
+                    {alertModal.type === 'success' ? (
+                        <FaCheckCircle className="text-6xl text-green-500 mb-4 animate-bounce" />
+                    ) : (
+                        <FaTimesCircle className="text-6xl text-red-500 mb-4 animate-bounce" />
+                    )}
+                    
+                    <p className="text-lg font-semibold text-slate-800 mb-6 text-center leading-relaxed">
+                        {alertModal.message}
+                    </p>
+                    
+                    <button 
+                        onClick={closeAlert}
+                        className="px-8 py-2.5 bg-slate-800 text-white font-bold rounded-xl shadow-sm hover:bg-slate-900 active:scale-95 transition-all w-full sm:w-auto"
+                    >
+                        Đã hiểu
+                    </button>
+                    
+                </div>
+            </Modal>
+
+            <input 
+                type="file" 
+                ref={fileInputRef} 
+                onChange={handleFileChange} 
+                accept="image/*" 
+                className="hidden" // Dùng class hidden của Tailwind cho gọn
+            />
         </>
     );
 };
