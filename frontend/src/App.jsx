@@ -10,6 +10,7 @@ import Sidebar from './components/layout/Sidebar';
 import Login from './pages/Auth/LoginForm';
 import Register from './pages/Auth/RegisterForm';
 import Home from './pages/Home/Home';
+import Information from './pages/User/Information';
 import CategoryIndex from './pages/Categories/CategoryIndex';
 //import AssetIndex from './pages/Assets/AssetIndex';
 //import WorkflowIndex from './pages/Workflows/WorkflowIndex';
@@ -47,7 +48,8 @@ function App() {
         <Route path="/" element={<Navigate to="/home" replace />} />
     
         <Route element={<ProtectedLayout />}>
-          <Route path="/home" element={<Home />} />       
+          <Route path="/home" element={<Home />} /> 
+          <Route path="/information" element={<Information />} />    
         </Route>
 
       </Routes>
