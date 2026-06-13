@@ -84,57 +84,41 @@ class UpdateEmailView(APIView):
 
     def patch(self, request):
         new_email = request.data.get('email')
-        
         # Basic validation to ensure the frontend sends the required data.
         if not new_email:
             return Response({"error": "Email is required"}, status=400)
-            
+        # Check if any OTHER user (excluding current user) is using this email.
+        if User.objects.filter(email=new_email).exclude(id=request.user.id).exists():
+            return Response({"error": "Email này đã được sử dụng bởi một tài khoản khác!"}, status=400) 
         request.user.email = new_email
         request.user.save()
-        
         return Response({
             "message": "Email updated successfully",
             "email": request.user.email
         })
 
-# ==========================================
-# 2. CHANGE PASSWORD API
-# ==========================================
 class ChangePasswordView(APIView):
     permission_classes = [IsAuthenticated]
-
     def patch(self, request):
         user = request.user
         current_password = request.data.get('currentPassword')
         new_password = request.data.get('newPassword')
-
-        # REASON: Security measure. We MUST verify the old password using Django's 
-        # built-in check_password function before allowing a password change.
         if not user.check_password(current_password):
             return Response({"error": "Incorrect current password"}, status=400)
-
-        # REASON: Never save raw passwords. set_password() handles the hashing securely.
+        # set_password() handles the hashing securely.
         user.set_password(new_password)
         user.save()
-        
         return Response({"message": "Password changed successfully"})
-
-# ==========================================
-# 3. UPDATE AVATAR API
-# ==========================================
+    
 class UpdateAvatarView(APIView):
     permission_classes = [IsAuthenticated]
     parser_classes = [MultiPartParser, FormParser]
-
     def patch(self, request):
         avatar_file = request.FILES.get('avatar')
-        
         if not avatar_file:
             return Response({"error": "No image file provided"}, status=400)
-            
         request.user.avatar = avatar_file
         request.user.save()
-
         return Response({
             "message": "Avatar updated successfully",
             "avatar": request.user.avatar.url
