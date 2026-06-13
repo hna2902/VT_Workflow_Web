@@ -154,7 +154,7 @@ const Header = () => {
                                     <div className={`w-3 h-3 bg-white rounded-full absolute top-0.5 transition-all shadow-sm ${isNotifEnabled ? 'left-4.5 right-0.5' : 'left-0.5'}`}></div>
                                 </div>
                             </button>
-                            <Link to="/settings" onClick={() => setIsDropdownOpen(false)} className="flex items-center px-5 py-3.5 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-blue-600 transition-colors">
+                            <Link to="/information" onClick={() => setIsDropdownOpen(false)} className="flex items-center px-5 py-3.5 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-blue-600 transition-colors">
                                 {/* Hộp nhốt Icon */}
                                 <div className="w-7 flex justify-start text-slate-400">
                                     <FaCog className="text-lg" />

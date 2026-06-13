@@ -29,6 +29,7 @@ const Login = () => {
             if (response.data.refresh) {
                 storage.setItem('refresh_token', response.data.refresh);
             }
+            storage.setItem('user_username', response.data.user.username);
             storage.setItem('user_name', response.data.user.name);
             storage.setItem('user_email', response.data.user.email);
             storage.setItem('user_role', response.data.user.role);
