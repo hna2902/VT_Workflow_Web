@@ -5,6 +5,7 @@ from django.utils.http import urlsafe_base64_decode
 from django.utils.encoding import force_str
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
+from processes.models import Category
 
 User = get_user_model()
 
@@ -14,6 +15,13 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         data = super().validate(attrs)
         # createsuperuser command leaves the custom 'role' field empty or default
         user_role = 'Admin' if self.user.is_superuser else self.user.role
+        display_role = user_role
+        if user_role != 'Admin':
+            # .exists() is highly optimized. It runs a lightweight SQL query (SELECT 1) 
+            # instead of loading the entire Category object into memory.
+            is_leader = Category.objects.filter(leader=self.user).exists()
+            if is_leader:
+                display_role = 'Team Leader'
         # Fallback to username if name is not provided, avoiding empty strings on UI
         display_name = self.user.name if self.user.name else self.user.username
         # Safely check if the avatar exists before calling .url to prevent Server 500 errors
@@ -26,6 +34,7 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
             'email': self.user.email,
             'name': display_name,
             'role': user_role,
+            'display_role': display_role,
             'avatar': avatar_url,
             'created_at': created_at_str,
             'notif_enabled': getattr(self.user, 'notif_enabled', True) 

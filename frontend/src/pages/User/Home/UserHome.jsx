@@ -1,7 +1,7 @@
 import React from 'react';
 import homeBgImage from '../../../assets/home_background.jpg';
 
-const Home = () => {
+const UserHome = () => {
     const name = localStorage.getItem('user_name') || sessionStorage.getItem('user_name') || 'Bạn';
 
     return (
@@ -28,4 +28,4 @@ const Home = () => {
     );
 };
 
-export default Home;
+export default UserHome;

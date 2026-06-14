@@ -2,6 +2,7 @@ from django.urls import path
 from rest_framework_simplejwt.views import TokenRefreshView
 from .serializers import CustomTokenObtainPairView
 from .views import (
+    UserListView,
     PasswordResetConfirmView, 
     PasswordResetRequestView, 
     RegisterView, 
@@ -9,14 +10,15 @@ from .views import (
     UpdateEmailView, 
     ChangePasswordView, 
     UpdateAvatarView,
-    UpdateNameView
+    UpdateNameView,
+    AdminUpdateUserView
 )
 
 urlpatterns = [
     path('register/', RegisterView.as_view(), name='register'),
     path('login/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh_'),
-
+    path('', UserListView.as_view(), name='user-list'),
     path('update-name/', UpdateNameView.as_view(), name='update-name'),
     path('update-email/', UpdateEmailView.as_view(), name='update-email'),
     path('change-password/', ChangePasswordView.as_view(), name='change-password'),
@@ -24,4 +26,5 @@ urlpatterns = [
     path('password-reset/', PasswordResetRequestView.as_view(), name='password_reset'),
     path('password-reset-confirm/', PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
     path('toggle-notif/', ToggleNotifView.as_view(), name='toggle-notif'),
+    path('<uuid:pk>/', AdminUpdateUserView.as_view(), name='admin-update-user'),
 ]

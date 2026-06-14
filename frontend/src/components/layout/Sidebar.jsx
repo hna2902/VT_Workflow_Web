@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { NavLink, Link } from 'react-router-dom';
-import axios from 'axios';
+import axiosClient from '../../utils/axiosClients';
+import { getUserStorage, setUserStorage } from '../../utils/storage';
 
 const Sidebar = () => {
     const [categories, setCategories] = useState([]);
@@ -8,17 +9,13 @@ const Sidebar = () => {
     const [loading, setLoading] = useState(true);
     const [isOpen, setIsOpen] = useState(false);
     
-    const currentUserRole = localStorage.getItem('user_role') || sessionStorage.getItem('user_role') || 'User'; 
+    const currentUserRole = getUserStorage('user_role', 'User');
 
     useEffect(() => {
         const fetchCategories = async () => {
             try {
-                // Ensure we check both storages for the token
-                const token = localStorage.getItem('access_token') || sessionStorage.getItem('access_token');
-                
-                const response = await axios.get('http://localhost:8000/api/processes/categories/', {
-                    headers: { Authorization: `Bearer ${token}` }
-                });
+                // axiosClient handles baseURL ('api/') and Authorization headers via interceptors
+                const response = await axiosClient.get('processes/categories/');
                 
                 setCategories(response.data);
                 setLoading(false);
@@ -113,7 +110,7 @@ const Sidebar = () => {
                 {currentUserRole === 'Admin' && (
                     <div className="p-4 border-t border-slate-300 bg-slate-200 shrink-0">
                         <Link 
-                            to="/categories/index"
+                            to="/categories/manage"
                             onClick={handleLinkClick}
                             className="flex items-center justify-center w-full px-4 py-3 text-sm font-bold text-white transition-colors bg-slate-700 rounded-lg shadow-sm hover:bg-slate-800 active:bg-slate-900"
                         >

@@ -94,7 +94,7 @@ const RegisterForm = () => {
                 </div>
 
                 {/* Right form card */}
-                <div className="w-full max-w-[420px] bg-white p-8 sm:p-10 rounded-[24px] shadow-[0_15px_40px_rgba(0,0,0,0.3)] my-auto">
+                <div className="w-full max-w-md bg-white p-6 sm:p-8 rounded-[24px] shadow-[0_15px_40px_rgba(0,0,0,0.3)] mt-10 mb-10">
                     
                     <div className="md:hidden flex flex-col items-center mb-6">
                         <img src={logo} alt="VT Logo" className="h-12 mb-3 object-contain" />
@@ -112,7 +112,7 @@ const RegisterForm = () => {
                         </div>
                     )}
 
-                    <form onSubmit={handleRegister} className="space-y-4">
+                    <form onSubmit={handleRegister} className="flex flex-col gap-3">
                         
                         {/* Name Input */}
                         <div className="relative">
@@ -121,7 +121,7 @@ const RegisterForm = () => {
                             </div>
                             <input 
                                 type="text" required value={name} onChange={(e) => setName(e.target.value)} placeholder="Họ và Tên"
-                                className="w-full pl-11 pr-4 py-3.5 text-slate-800 bg-slate-50 border rounded-full outline-none border-slate-200 focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-100 transition-all"
+                                className="w-full pl-11 pr-4 py-2 text-slate-800 bg-slate-50 border rounded-full outline-none border-slate-200 focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-100 transition-all"
                             />
                         </div>
                         {/* Email Input */}
@@ -131,7 +131,7 @@ const RegisterForm = () => {
                             </div>
                             <input 
                                 type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email"
-                                className="w-full pl-11 pr-4 py-3.5 text-slate-800 bg-slate-50 border rounded-full outline-none border-slate-200 focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-100 transition-all"
+                                className="w-full pl-11 pr-4 py-2 text-slate-800 bg-slate-50 border rounded-full outline-none border-slate-200 focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-100 transition-all"
                             />
                         </div>
                         {/* Username Input */}
@@ -141,7 +141,7 @@ const RegisterForm = () => {
                             </div>
                             <input 
                                 type="text" required value={username} onChange={(e) => setUsername(e.target.value)} placeholder="Tên đăng nhập"
-                                className="w-full pl-11 pr-4 py-3.5 text-slate-800 bg-slate-50 border rounded-full outline-none border-slate-200 focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-100 transition-all"
+                                className="w-full pl-11 pr-4 py-2 text-slate-800 bg-slate-50 border rounded-full outline-none border-slate-200 focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-100 transition-all"
                             />
                         </div>
 
@@ -152,7 +152,7 @@ const RegisterForm = () => {
                             </div>
                             <input 
                                 type="password" required value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Mật khẩu"
-                                className="w-full pl-11 pr-4 py-3.5 text-slate-800 bg-slate-50 border rounded-full outline-none border-slate-200 focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-100 transition-all"
+                                className="w-full pl-11 pr-4 py-2 text-slate-800 bg-slate-50 border rounded-full outline-none border-slate-200 focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-100 transition-all"
                             />
                         </div>
 
@@ -163,21 +163,21 @@ const RegisterForm = () => {
                             </div>
                             <input 
                                 type="password" required value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="Xác nhận mật khẩu"
-                                className="w-full pl-11 pr-4 py-3.5 text-slate-800 bg-slate-50 border rounded-full outline-none border-slate-200 focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-100 transition-all"
+                                className="w-full pl-11 pr-4 py-2 text-slate-800 bg-slate-50 border rounded-full outline-none border-slate-200 focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-100 transition-all"
                             />
                         </div>
 
                         {/* Submit Button */}
                         <button 
                             type="submit" disabled={loading}
-                            className={`w-full py-3.5 mt-4 text-base font-bold text-white transition-all rounded-full shadow-md flex justify-center items-center ${loading ? 'bg-slate-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700 hover:shadow-lg active:scale-95'}`}
+                            className={`w-full py-2 mt-4 text-base font-bold text-white transition-all rounded-full shadow-md flex justify-center items-center ${loading ? 'bg-slate-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700 hover:shadow-lg active:scale-95'}`}
                         >
                             {loading ? 'ĐANG XỬ LÝ...' : 'TẠO TÀI KHOẢN'}
                         </button>
                     </form>
 
                     {/* Switch to Login link */}
-                    <div className="mt-6 text-center border-t border-slate-100 pt-6">
+                    <div className="mt-2 text-center border-t border-slate-100 pt-6">
                         <p className="text-sm text-slate-600">
                             Đã có tài khoản?{' '}
                             <Link to="/login" className="font-bold text-blue-600 hover:text-blue-800 transition-colors">

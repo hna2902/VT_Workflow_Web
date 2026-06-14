@@ -1,6 +1,7 @@
-import axios from 'axios';
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import axiosClient from '../../utils/axiosClients';
+import { getUserStorage, setUserStorage } from '../../utils/storage';
 import logo from '../../assets/logo.png'; 
 import defaultAvatar from '../../assets/default-avatar.png'; 
 import { 
@@ -9,7 +10,8 @@ import {
     FaSignOutAlt, 
     FaListAlt,
     FaAngleDown,
-    FaCalendarAlt
+    FaCalendarAlt,
+    FaBellSlash
 } from 'react-icons/fa';
 
 const Header = () => {
@@ -17,15 +19,20 @@ const Header = () => {
     const dropdownRef = useRef(null);
     const navigate = useNavigate();
 
-    const role = localStorage.getItem('user_role') || sessionStorage.getItem('user_role') || 'User';
-    const name = localStorage.getItem('user_name') || sessionStorage.getItem('user_name') || 'Bạn';
-    const displayDate = localStorage.getItem('user_created_at') || sessionStorage.getItem('user_created_at') || 'Mới đây';
-    const initialNotifState = localStorage.getItem('user_notif_enabled') === 'true' || sessionStorage.getItem('user_notif_enabled') === 'true';
-    const [isNotifEnabled, setIsNotifEnabled] = useState(initialNotifState);
-    const [userAvatar, setAvatar] = useState(
-        localStorage.getItem('user_avatar') || sessionStorage.getItem('user_avatar') || defaultAvatar
+    const role = getUserStorage('user_role', 'User');
+    const name = getUserStorage('user_name', 'Bạn');
+    const displayDate = getUserStorage('user_created_at', 'Mới đây');
+    
+    const [isNotifEnabled, setIsNotifEnabled] = useState(
+        getUserStorage('user_notif_enabled', 'false') === 'true'
     );
+    
+    const [userAvatar, setAvatar] = useState(
+        getUserStorage('user_avatar', defaultAvatar)
+    );
+    
     const displayRole = role === 'Admin' ? 'Quản trị viên' : 'Người dùng';
+
     // Handle outside click to close dropdown
     useEffect(() => {
         const handleClickOutside = (event) => {
@@ -37,9 +44,10 @@ const Header = () => {
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
+    // Listen for avatar updates across the app
     useEffect(() => {
         const handleAvatarChange = () => {
-            setAvatar(localStorage.getItem('user_avatar') || sessionStorage.getItem('user_avatar') || defaultAvatar);
+            setAvatar(getUserStorage('user_avatar', defaultAvatar));
         };
         window.addEventListener('avatarUpdated', handleAvatarChange);
         return () => {
@@ -57,20 +65,16 @@ const Header = () => {
         e.stopPropagation();
         const previousState = isNotifEnabled;
         const newState = !previousState;
+        
         setIsNotifEnabled(newState);
-        localStorage.setItem('user_notif_enabled', newState.toString());
-        sessionStorage.setItem('user_notif_enabled', newState.toString());
+        setUserStorage('user_notif_enabled', String(newState));
 
         try {
-            const token = localStorage.getItem('access_token') || sessionStorage.getItem('access_token');
-            await axios.patch('http://localhost:8000/api/users/toggle-notif/', {}, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            await axiosClient.patch('users/toggle-notif/', {});
         } catch (error) {
-            console.error("Lỗi khi cập nhật thông báo:", error);
+            console.error("Error updating notification status:", error);
             setIsNotifEnabled(previousState);
-            localStorage.setItem('user_notif_enabled', previousState.toString());
-            sessionStorage.setItem('user_notif_enabled', previousState.toString());
+            setUserStorage('user_notif_enabled', String(previousState));
             alert("Không thể cập nhật trạng thái thông báo!");
         }
     };

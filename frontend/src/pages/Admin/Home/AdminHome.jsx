@@ -1,9 +1,12 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { FaUsers, FaFolderOpen } from 'react-icons/fa';
 import homeBgImage from '../../../assets/home_background.jpg';
+import { 
+    FaUsers, 
+    FaFolderOpen 
+} from 'react-icons/fa';
 
-const Home = () => {
+const AdminHome = () => {
     const name = localStorage.getItem('user_name') || sessionStorage.getItem('user_name') || 'Admin';
 
     return (
@@ -49,4 +52,4 @@ const Home = () => {
     );
 };
 
-export default Home;
+export default AdminHome;

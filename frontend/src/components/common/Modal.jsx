@@ -1,28 +1,27 @@
 import React from 'react';
+import ReactDOM from 'react-dom';
 
 const Modal = ({ isOpen, onClose, title, children }) => {
   // Prevent rendering if modal is closed
   if (!isOpen) return null;
 
-  return (
-    // Backdrop overlay
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+  return ReactDOM.createPortal(
+    // Backdrop overlay: Đã xóa backdrop-blur-sm, chỉ dùng bg-black/60 để làm tối nền phía sau
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 transition-opacity">
       
-      {/* Modal box */}
-      <div className="w-full max-w-md p-6 bg-white rounded-lg shadow-xl">
-        
-        {/* Modal header with title and close button */}
+      {/* Lớp Overlay để bấm thoát */}
+      <div className="absolute inset-0 cursor-pointer" onClick={onClose}></div>
+
+      {/* Modal box: Vẫn giữ lại animation mượt mà cho khối nội dung */}
+      <div className="relative w-full max-w-md p-6 bg-white rounded-2xl shadow-2xl animate-in zoom-in duration-200">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-bold text-slate-800">{title}</h2>
         </div>
-
-        {/* Dynamic content injection point */}
-        <div>
-          {children}
-        </div>
-
+        
+        <div>{children}</div>
       </div>
-    </div>
+    </div>,
+    document.body // Ép Modal nằm ở cấp độ cao nhất của HTML
   );
 };
 

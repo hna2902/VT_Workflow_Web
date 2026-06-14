@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import axios from 'axios';
+import axiosClient from '../../utils/axiosClients';
 import logo from '../../assets/logo.png'; 
 import { FaUser, FaLock, FaIdCard, FaEnvelope, FaCheckCircle } from 'react-icons/fa';
 import Modal from '../../components/common/Modal';
+import { getUserStorage, setUserStorage } from '../../utils/storage';
 
 const Login = () => {
     const [username, setUsername] = useState('');
@@ -18,26 +19,30 @@ const Login = () => {
         setError('');
         setLoading(true);
         try {
-            const response = await axios.post('http://localhost:8000/api/users/login/', {
+            const response = await axiosClient.post('users/login/', {
                 username: username,
                 password: password
             });
-            const notifStatus = response.data.user.notif_enabled ?? true;
-            const storage = rememberMe ? localStorage : sessionStorage;
-            storage.setItem('access_token', response.data.access);
+            const userData = response.data.user;
+            const notifStatus = userData.notif_enabled ?? true;
+            setUserStorage('access_token', response.data.access);
             if (response.data.refresh) {
-                storage.setItem('refresh_token', response.data.refresh);
+                setUserStorage('refresh_token', response.data.refresh);
             }
-            storage.setItem('user_username', response.data.user.username);
-            storage.setItem('user_name', response.data.user.name);
-            storage.setItem('user_email', response.data.user.email);
-            storage.setItem('user_role', response.data.user.role);
-            storage.setItem('user_notif_enabled', String(notifStatus));
-            storage.setItem('user_created_at', response.data.user.created_at);
-            if (response.data.user.avatar) {
-                storage.setItem('user_avatar', 'http://localhost:8000' + response.data.user.avatar);
+            setUserStorage('user_username', userData.username);
+            setUserStorage('user_name', userData.name);
+            setUserStorage('user_email', userData.email);
+            setUserStorage('user_role', userData.role);
+            setUserStorage('user_id', userData.id);
+            setUserStorage('user_display_role', userData.display_role);
+            setUserStorage('user_notif_enabled', String(notifStatus));
+            setUserStorage('user_created_at', userData.created_at);
+            if (userData.avatar) {
+                const avatarUrl = userData.avatar.startsWith('http') ? userData.avatar : 'http://localhost:8000' + userData.avatar;
+                setUserStorage('user_avatar', avatarUrl);
             } else {
-                storage.removeItem('user_avatar');
+                localStorage.removeItem('user_avatar');
+                sessionStorage.removeItem('user_avatar');
             }
 
             setIsSuccessModalOpen(true);
@@ -53,7 +58,7 @@ const Login = () => {
     };
 
     return (
-        <div className="relative flex items-center justify-center min-h-screen">
+        <div className="relative flex items-center justify-center min-h-[100dvh] overflow-y-auto py-6">
             <div className="absolute inset-0 z-0">
                 <img 
                     src="https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=2000&auto=format&fit=crop" 
@@ -63,8 +68,8 @@ const Login = () => {
                 <div className="absolute inset-0 bg-black/40"></div>
             </div>
 
-            <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between w-full max-w-7xl px-6 lg:px-12 gap-12">
-                <div className="flex-1 text-center lg:text-left pt-10 lg:pt-0">
+            <div className="relative z-10 flex flex-col lg:flex-row items-center justify-center lg:justify-between w-full max-w-7xl px-4 sm:px-6 lg:px-12 gap-8 lg:gap-12">
+                <div className="flex-1 text-center lg:text-left pt-0 lg:pt-0">
                     <div className="flex items-center justify-center lg:justify-start gap-4 mb-6">
                         <img src={logo} alt="VT Logo" className="h-16 lg:h-20 object-contain drop-shadow-xl bg-white/10 p-2 rounded-xl backdrop-blur-sm" />
                         <h1 className="text-5xl lg:text-6xl font-extrabold tracking-tight text-white drop-shadow-lg">
@@ -101,7 +106,7 @@ const Login = () => {
                             </div>
                             <input 
                                 type="text" required value={username} onChange={(e) => setUsername(e.target.value)} placeholder="Tên đăng nhập"
-                                className="w-full pl-11 pr-4 py-3.5 text-slate-800 bg-slate-50 border rounded-full outline-none border-slate-200 focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-100 transition-all"
+                                className="w-full pl-11 pr-4 py-2 text-slate-800 bg-slate-50 border rounded-full outline-none border-slate-200 focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-100 transition-all"
                             />
                         </div>
 
@@ -112,7 +117,7 @@ const Login = () => {
                             </div>
                             <input 
                                 type="password" required value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Mật khẩu"
-                                className="w-full pl-11 pr-4 py-3.5 text-slate-800 bg-slate-50 border rounded-full outline-none border-slate-200 focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-100 transition-all"
+                                className="w-full pl-11 pr-4 py-2 text-slate-800 bg-slate-50 border rounded-full outline-none border-slate-200 focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-100 transition-all"
                             />
                         </div>
 
@@ -135,13 +140,13 @@ const Login = () => {
                         {/* Nút Submit */}
                         <button 
                             type="submit" disabled={loading}
-                            className={`w-full py-3.5 mt-2 text-base font-bold text-white transition-all rounded-full shadow-md flex justify-center items-center ${loading ? 'bg-slate-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700 hover:shadow-lg active:scale-95'}`}
+                            className={`w-full py-2 mt-2 text-base font-bold text-white transition-all rounded-full shadow-md flex justify-center items-center ${loading ? 'bg-slate-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700 hover:shadow-lg active:scale-95'}`}
                         >
                             {loading ? 'ĐANG XÁC THỰC...' : 'ĐĂNG NHẬP'}
                         </button>
                     </form>
                     {/* Switch to Register */}
-                    <div className="mt-8 text-center border-t border-slate-100 pt-6">
+                    <div className="mt-5 text-center border-t border-slate-100">
                         <p className="text-sm text-slate-600">
                             Chưa có tài khoản?{' '}
                             <Link to="/register" className="font-bold text-blue-600 hover:text-blue-800 transition-colors">

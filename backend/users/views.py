@@ -4,6 +4,7 @@ from django.contrib.auth import get_user_model
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from django.contrib.auth import authenticate
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.contrib.auth.hashers import check_password
 from django.utils.encoding import force_bytes, force_str
@@ -12,8 +13,21 @@ from django.core.mail import send_mail
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.parsers import MultiPartParser, FormParser
 from .serializers import PasswordResetRequestSerializer, RegisterSerializer, SetNewPasswordSerializer
-
+from processes.models import Category
 User = get_user_model()
+
+class UserListView(APIView):
+    permission_classes = [IsAuthenticated]
+    def get(self, request):
+        if request.user.role != 'Admin':
+            return Response(
+                {"detail": "Only Admins can view this list."}, 
+                status=status.HTTP_403_FORBIDDEN
+            )
+        users = User.objects.exclude(id=request.user.id).exclude(is_superuser=True).values(
+            'id', 'username', 'name', 'email', 'role', 'avatar', 'date_joined'
+        )
+        return Response(list(users), status=status.HTTP_200_OK)
 
 class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
@@ -142,3 +156,54 @@ class UpdateNameView(APIView):
             "message": "Cập nhật tên thành công",
             "name": request.user.name
         })
+    
+class AdminUpdateUserView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def patch(self, request, pk):
+        if request.user.role != 'Admin':
+            return Response({"detail": "Chỉ Admin mới có quyền này."}, status=status.HTTP_403_FORBIDDEN)
+        try:
+            user = User.objects.get(pk=pk)
+        except User.DoesNotExist:
+            return Response({"detail": "Không tìm thấy người dùng."}, status=status.HTTP_404_NOT_FOUND)
+        if 'role' in request.data:
+            user.role = request.data['role']
+        if 'password' in request.data and request.data['password']:
+            user.set_password(request.data['password'])
+        user.save()
+        if 'leader_id' in request.data:
+            leader_id = request.data['leader_id']
+            Category.objects.filter(leader=user).update(leader=None)
+            if leader_id is not None:
+                Category.objects.filter(id=leader_id).update(leader=user)
+
+        return Response({"message": "Cập nhật thành công!"}, status=status.HTTP_200_OK)
+    
+    def delete(self, request, pk):
+        if request.user.role != 'Admin':
+            return Response({"detail": "Chỉ Admin mới có quyền này."}, status=status.HTTP_403_FORBIDDEN)
+
+        try:
+            user_to_delete = User.objects.get(pk=pk)
+        except User.DoesNotExist:
+            return Response({"detail": "Không tìm thấy người dùng."}, status=status.HTTP_404_NOT_FOUND)
+
+        if request.user.id == user_to_delete.id:
+            return Response({"detail": "Bạn không thể tự xóa chính tài khoản của mình!"}, status=status.HTTP_400_BAD_REQUEST)
+
+        if user_to_delete.is_superuser:
+            return Response({"detail": "Bất khả xâm phạm! Bạn không thể xóa tài khoản Superuser."}, status=status.HTTP_403_FORBIDDEN)
+
+        user_to_delete.delete()
+        return Response({"message": "Đã xóa người dùng thành công!"}, status=status.HTTP_200_OK)
+    
+class VerifyPasswordView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        password = request.data.get('password')
+        user = authenticate(username=request.user.username, password=password)
+        if user:
+            return Response({"message": "Verified"}, status=status.HTTP_200_OK)
+        return Response({"detail": "Mật khẩu không chính xác."}, status=status.HTTP_400_BAD_REQUEST)

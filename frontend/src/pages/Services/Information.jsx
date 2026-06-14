@@ -1,8 +1,9 @@
-import React, { useState, useRef } from 'react';
-import axios from 'axios';
+import React, { useState, useRef, useEffect } from 'react';
 import defaultAvatar from '../../assets/default-avatar.png';
 import ChangePasswordForm from './ChangePasswordForm';
 import Modal from '../../components/common/Modal';
+import axiosClient from '../../utils/axiosClients';
+import { getUserStorage, setUserStorage } from '../../utils/storage';
 import { 
     FaCamera, 
     FaCalendarAlt, 
@@ -19,23 +20,23 @@ import {
 
 const Information = () => {
     
-    const role = localStorage.getItem('user_role') || sessionStorage.getItem('user_role') || 'User';
-    const username = localStorage.getItem('user_username') || sessionStorage.getItem('user_username') || 'username';
+    const role = getUserStorage('user_role', 'User');
+    const username = getUserStorage('user_name', 'username');
     const fileInputRef = useRef(null);
-    const createdAt = localStorage.getItem('user_created_at') || sessionStorage.getItem('user_created_at') || 'Mới đây';
-    const initialNotifState = localStorage.getItem('user_notif_enabled') === 'true' || sessionStorage.getItem('user_notif_enabled') === 'true';
-    const initialAvatar = localStorage.getItem('user_avatar') || sessionStorage.getItem('user_avatar') || defaultAvatar;
+    const createdAt = getUserStorage('user_created_at', 'Mới đây');
     
-    const [isNotifEnabled, setIsNotifEnabled] = useState(initialNotifState);
-    const [avatar, setAvatar] = useState(initialAvatar);
+    const [isNotifEnabled, setIsNotifEnabled] = useState(getUserStorage('user_notif_enabled', 'false') === 'true');
+    const [avatar, setAvatar] = useState(getUserStorage('user_avatar', defaultAvatar));
     const [alertModal, setAlertModal] = useState({isOpen: false,title: '',message: '',type: 'info'});
     const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+    const [isLeader, setIsLeader] = useState(false);
+    const userId = getUserStorage('user_id', null);
     // Name State
-    const [name, setName] = useState(localStorage.getItem('user_name') || sessionStorage.getItem('user_name') || 'Người dùng');
+    const [name, setName] = useState(getUserStorage('user_name', 'Người dùng'));
     const [isEditingName, setIsEditingName] = useState(false);
     const [tempName, setTempName] = useState('');
     // Email State
-    const [email, setEmail] = useState(localStorage.getItem('user_email') || sessionStorage.getItem('user_email') || 'Chưa cập nhật email');
+    const [email, setEmail] = useState(getUserStorage('user_email', 'Chưa cập nhật email'));
     const [isEditingEmail, setIsEditingEmail] = useState(false);
     const [tempEmail, setTempEmail] = useState('');
 
@@ -47,9 +48,10 @@ const Information = () => {
     };
 
     const handleFileChange = async (event) => {
-
         const file = event.target.files[0];
         if (!file) return;
+        
+        // Validate định dạng và dung lượng
         if (!file.type.startsWith('image/')) {
             showAlert("Thất bại", "Vui lòng chọn đúng định dạng", "error");
             return;
@@ -59,35 +61,38 @@ const Information = () => {
             return;
         }
 
+        // Lưu ảnh cũ để phòng hờ lỗi, và tạo ảnh tạm để hiển thị liền
         const previousAvatar = avatar;
         const tempUrl = URL.createObjectURL(file);
         setAvatar(tempUrl); 
+        
+        // Gói file vào FormData
         const formData = new FormData();
         formData.append('avatar', file);
+        
         try {
-            const token = localStorage.getItem('access_token') || sessionStorage.getItem('access_token');
-            const response = await axios.patch('http://localhost:8000/api/users/update-avatar/', formData, {
-                headers: { 
-                    Authorization: `Bearer ${token}`,
-                    'Content-Type': 'multipart/form-data'
+            const response = await axiosClient.patch('users/update-avatar/', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
                 }
             });
-            let serverAvatarUrl = response.data.avatar;
-            if (!serverAvatarUrl.startsWith('http')) {
-                serverAvatarUrl = 'http://localhost:8000' + serverAvatarUrl;
-            }
-            setAvatar(serverAvatarUrl); 
-            localStorage.setItem('user_avatar', serverAvatarUrl);
-            sessionStorage.setItem('user_avatar', serverAvatarUrl);
+            
+            // SỬA CHỖ NÀY: Khai báo serverAvatarUrl lấy từ response của Backend
+            const avatarPath = response.data.avatar;
+            const serverAvatarUrl = avatarPath.startsWith('http') ? avatarPath : `http://localhost:8000${avatarPath}`;
+            
+            setAvatar(serverAvatarUrl);
+            setUserStorage('user_avatar', serverAvatarUrl);
             window.dispatchEvent(new Event('avatarUpdated'));
             showAlert("Thành công", "Cập nhật ảnh đại diện thành công", "success");
 
         } catch (error) {
             console.error("Lỗi Upload Avatar:", error);
+            // Trả về ảnh cũ nếu gọi API thất bại
             setAvatar(previousAvatar);
             showAlert("Upload thất bại", "Không thể upload ảnh đại diện. Vui lòng thử lại", "error");
         } finally {
-            event.target.value = null;
+            event.target.value = null; // Reset input file
         }
     };
 
@@ -95,18 +100,13 @@ const Information = () => {
         const previousState = isNotifEnabled;
         const newState = !previousState;
         setIsNotifEnabled(newState);
-        localStorage.setItem('user_notif_enabled', newState.toString());
-        sessionStorage.setItem('user_notif_enabled', newState.toString());
+        setUserStorage('user_notif_enable', newState.toString());
         try {
-            const token = localStorage.getItem('access_token') || sessionStorage.getItem('access_token');
-            await axios.patch('http://localhost:8000/api/users/toggle-notif/', {}, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            await axiosClient.patch('users/toggle-notif/');
         } catch (error) {
             console.error("Lỗi khi cập nhật thông báo:", error);
             setIsNotifEnabled(previousState);
-            localStorage.setItem('user_notif_enabled', previousState.toString());
-            sessionStorage.setItem('user_notif_enabled', previousState.toString());
+            setUserStorage('user_notif_enable', newState.toString());
             showAlert("Lỗi hệ thống", "Không thể cập nhật trạng thái thông báo!", "error");
         }
     };
@@ -117,15 +117,11 @@ const Information = () => {
             return;
         }
         try {
-            const token = localStorage.getItem('access_token') || sessionStorage.getItem('access_token');
-            const response = await axios.patch('http://localhost:8000/api/users/update-name/', 
-                { name: tempName }, { headers: { Authorization: `Bearer ${token}` } }
-            );
-            
-            // Success: Update real state, storage, and close edit mode
+            const response = await axiosClient.patch('users/update-name/', { 
+                name: tempName 
+            });
             setName(response.data.name);
-            localStorage.setItem('user_name', response.data.name);
-            sessionStorage.setItem('user_name', response.data.name);
+            setUserStorage('user_name', response.data.name);
             setIsEditingName(false);
             showAlert("Thành công", "Đã cập nhật tên hiển thị!", "success");
         } catch (error) {
@@ -136,14 +132,12 @@ const Information = () => {
     const handleUpdateEmailInline = async () => {
         if (!tempEmail.trim()) return;
         try {
-            const token = localStorage.getItem('access_token') || sessionStorage.getItem('access_token');
-            const response = await axios.patch('http://localhost:8000/api/users/update-email/', 
-                { email: tempEmail }, { headers: { Authorization: `Bearer ${token}` } }
-            );
-            
+            const response = await axiosClient.patch('users/change-password/', {
+                currentPassword: passwords.currentPassword,
+                newPassword: passwords.newPassword
+            });
             setEmail(response.data.email);
-            localStorage.setItem('user_email', response.data.email);
-            sessionStorage.setItem('user_email', response.data.email);
+            setUserStorage('user_email', response.data.email);
             setIsEditingEmail(false);
             showAlert("Thành công", "Đã cập nhật địa chỉ Email!", "success");
         } catch (error) {
@@ -158,12 +152,9 @@ const Information = () => {
             return;
         }
         try {
-            const token = localStorage.getItem('access_token') || sessionStorage.getItem('access_token');
-            const response = await axios.patch('http://localhost:8000/api/users/change-password/', {
+            const response = await axiosClient.patch('users/change-password/', {
                 currentPassword: passwords.currentPassword,
                 newPassword: passwords.newPassword
-            }, {
-                headers: { Authorization: `Bearer ${token}` }
             });
             setIsPasswordModalOpen(false);
             showAlert("Thành công", "Đổi mật khẩu thành công! Vui lòng dùng mật khẩu mới cho lần đăng nhập sau.", "success");
@@ -183,6 +174,30 @@ const Information = () => {
         }
     };
 
+    useEffect(() => {
+    // REASON: Admins already have the highest priority badge, so skip checking.
+    if (role === 'Admin' || !userId) return;
+
+    const checkLeaderStatus = async () => {
+        try {
+            const response = await axiosClient.get('processes/categories/');
+            
+            // REFACTOR: Our system uses UUIDs (strings) for User IDs. 
+            // Using Number() previously caused it to return NaN. 
+            // We force both values to String to ensure accurate UUID matching.
+            const amILeader = response.data.some(
+                cat => String(cat.leader) === String(userId)
+            );
+            
+            setIsLeader(amILeader);
+        } catch (error) {
+            console.error("Error checking leader status:", error);
+        }
+    };
+
+        checkLeaderStatus();
+    }, [userId, role]);
+
     const InfoCard = ({ icon: Icon, label, value, color, actionElement }) => (
         <div className="flex items-center gap-4 p-4 sm:p-5 bg-white rounded-3xl border border-slate-500 shadow-sm hover:shadow-md transition-all group">
             <div className={`p-3 sm:p-4 rounded-2xl shrink-0 ${color.bg} ${color.text}`}>
@@ -192,7 +207,6 @@ const Information = () => {
                 <p className="text-xs font-bold text-slate-400 uppercase tracking-widest truncate">{label}</p>
                 <p className="text-base sm:text-lg font-extrabold text-slate-900 mt-0.5 break-words">{value}</p>
             </div>
-            {/* Nếu có truyền vào nút bấm/công tắc thì sẽ hiển thị ở đây */}
             {actionElement && (
                 <div className="shrink-0 pl-2">
                     {actionElement}
@@ -255,17 +269,20 @@ const Information = () => {
                             </div>
                         )}
                         <p className="text-slate-400 font-semibold text-sm sm:text-base mt-0.5 break-all">@{username}</p>
-                        <div className={`mt-4 px-4 sm:px-5 py-1 sm:py-1.5 rounded-full ${
-                            role === 'Admin' ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700'
+                        {/* REASON: Render different colors and texts based on Role priority (Admin > Leader > User) */}
+                        <div className={`mt-4 px-4 sm:px-5 py-1 sm:py-1.5 rounded-full inline-block shadow-sm ${
+                            role === 'Admin' ? 'bg-red-100 text-red-700' : 
+                            isLeader ? 'bg-purple-100 text-purple-700' : 
+                            'bg-blue-100 text-blue-700'
                         }`}>
                             <span className="text-xs font-black uppercase tracking-widest">
-                                {role === 'Admin' ? 'Quản trị viên' : 'Người dùng'}
+                                {role === 'Admin' ? 'Admin' : isLeader ? 'Team Leader' : 'User'}
                             </span>
                         </div>
                     </div>
 
                     <div className="md:col-span-2 space-y-6">
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
                             <InfoCard 
                                 icon={FaAt} label="Địa chỉ Email"
                                 color={{bg: "bg-blue-50", text: "text-blue-600"}}
