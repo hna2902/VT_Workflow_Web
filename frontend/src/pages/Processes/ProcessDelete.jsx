@@ -1,8 +1,6 @@
 import React from 'react';
 import Modal from '../../components/common/Modal';
 
-// REASON: A dedicated component for process deletion to keep the parent view clean.
-// It highlights the specific step and title being deleted for user clarity.
 const ProcessDelete = ({ isOpen, processItem, onClose, onConfirm }) => {
     return (
         <Modal isOpen={isOpen} onClose={onClose} title="Xác nhận xóa bước thực hiện">

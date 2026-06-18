@@ -27,7 +27,6 @@ const ChangePasswordForm = ({ onClose, onSubmit }) => {
             <input 
                 type="password" name="currentPassword" required
                 value={formData.currentPassword} onChange={handleChange}
-                // SỬA: Thêm text-base sm:text-sm
                 className="w-full px-4 py-3 sm:py-2.5 bg-slate-50 border-2 border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-slate-700 text-base sm:text-sm font-medium transition-all"
             />
         </div>
@@ -37,7 +36,6 @@ const ChangePasswordForm = ({ onClose, onSubmit }) => {
             <input 
                 type="password" name="newPassword" required
                 value={formData.newPassword} onChange={handleChange}
-                // SỬA: Thêm text-base sm:text-sm
                 className="w-full px-4 py-3 sm:py-2.5 bg-slate-50 border-2 border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-slate-700 text-base sm:text-sm font-medium transition-all"
             />
         </div>
@@ -47,12 +45,10 @@ const ChangePasswordForm = ({ onClose, onSubmit }) => {
             <input 
                 type="password" name="confirmPassword" required
                 value={formData.confirmPassword} onChange={handleChange}
-                // SỬA: Thêm text-base sm:text-sm
                 className="w-full px-4 py-3 sm:py-2.5 bg-slate-50 border-2 border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-slate-700 text-base sm:text-sm font-medium transition-all"
             />
         </div>
         
-        {/* SỬA: Đổi layout flex để tối ưu Mobile (Nút Lưu nằm trên, nút Hủy nằm dưới khi ở màn hình nhỏ) */}
         <div className="flex flex-col-reverse sm:flex-row gap-3 pt-5 mt-2 border-t border-slate-200">
             <button 
                 type="button" 

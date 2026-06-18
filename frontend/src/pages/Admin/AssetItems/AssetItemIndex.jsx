@@ -8,7 +8,7 @@ import AssetItemDelete from './AssetItemDelete';
 import AssetItemRow from './AssetItemRow'; 
 
 const AssetItemIndex = () => {
-    const { categoryId } = useParams(); // URL sẽ có dạng /admin/assets/:categoryId
+    const { categoryId } = useParams();
     const [assets, setAssets] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [loading, setLoading] = useState(true);
@@ -23,7 +23,6 @@ const AssetItemIndex = () => {
     const showAlert = (title, message, type) => setAlertConfig({ isOpen: true, title, message, type });
     const closeAlert = () => setAlertConfig({ ...alertConfig, isOpen: false });
 
-    // Gọi API kèm tham số category
     const fetchAssets = async () => {
         try {
             const response = await axiosClient.get(`processes/items/?category=${categoryId}`);

@@ -8,7 +8,6 @@ import Modal from '../../components/common/Modal';
 const RegisterForm = () => {
     // 1. State initialization
     const [name, setName] = useState('');
-    const [email, setEmail] = useState('');
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
@@ -35,7 +34,6 @@ const RegisterForm = () => {
             await axios.post('http://localhost:8000/api/users/register/', {
                 username: username,
                 name: name,
-                email: email,
                 password: password
             });
 
@@ -124,16 +122,7 @@ const RegisterForm = () => {
                                 className="w-full pl-11 pr-4 py-2 text-slate-800 bg-slate-50 border rounded-full outline-none border-slate-200 focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-100 transition-all"
                             />
                         </div>
-                        {/* Email Input */}
-                        <div className="relative">
-                            <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-slate-400">
-                                <FaEnvelope />
-                            </div>
-                            <input 
-                                type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email"
-                                className="w-full pl-11 pr-4 py-2 text-slate-800 bg-slate-50 border rounded-full outline-none border-slate-200 focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-100 transition-all"
-                            />
-                        </div>
+
                         {/* Username Input */}
                         <div className="relative">
                             <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-slate-400">
@@ -167,7 +156,6 @@ const RegisterForm = () => {
                             />
                         </div>
 
-                        {/* Submit Button */}
                         <button 
                             type="submit" disabled={loading}
                             className={`w-full py-2 mt-4 text-base font-bold text-white transition-all rounded-full shadow-md flex justify-center items-center ${loading ? 'bg-slate-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700 hover:shadow-lg active:scale-95'}`}

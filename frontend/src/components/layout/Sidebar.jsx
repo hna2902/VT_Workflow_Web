@@ -45,17 +45,17 @@ const Sidebar = () => {
 
     return (
         <>
-            {/* Nút toggle cho mobile giữ nguyên */}
+            {/* Nút toggle cho mobile - Dạng tab bên mép trái */}
             <button 
                 onClick={() => setIsOpen(!isOpen)}
-                className="md:hidden fixed bottom-6 right-6 z-50 flex items-center justify-center w-14 h-14 text-2xl text-white bg-blue-600 rounded-full shadow-xl hover:bg-blue-700 transition-transform active:scale-95"
+                className={`md:hidden fixed top-1/2 -translate-y-1/2 z-50 flex items-center justify-center w-8 h-16 text-xl font-bold text-white bg-blue-600 shadow-[4px_0_10px_rgba(0,0,0,0.1)] hover:bg-blue-700 transition-all duration-300 rounded-r-xl ${isOpen ? 'left-72' : 'left-0'}`}
             >
-                {isOpen ? '✕' : '☰'}
+                {isOpen ? '‹' : '›'}
             </button>
 
             {isOpen && (
                 <div 
-                    className="absolute inset-0 z-30 bg-black/40 md:hidden transition-opacity backdrop-blur-sm"
+                    className="absolute inset-0 z-30 bg-black/50 md:hidden transition-opacity"
                     onClick={() => setIsOpen(false)}
                 />
             )}
@@ -122,7 +122,7 @@ const Sidebar = () => {
                 {currentUserRole === 'Admin' && (
                     <div className="p-4 border-t border-slate-300 bg-slate-200 shrink-0">
                         <Link 
-                            to="/categories/manage" // Tùy chỉnh URL quản lý của bạn
+                            to="/admin/categories/manage" // Tùy chỉnh URL quản lý của bạn
                             onClick={handleLinkClick}
                             className="flex items-center justify-center w-full px-4 py-3 text-sm font-bold text-white transition-colors bg-slate-700 rounded-lg shadow-sm hover:bg-slate-800 active:bg-slate-900"
                         >

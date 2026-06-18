@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import axiosClient from '../../../utils/axiosClients';
 import { FaChevronDown, FaUpload, FaTimes } from 'react-icons/fa';
 
-// REASON: Added initialData prop. If it exists, we are in Edit Mode.
 const AssetItemForm = ({ onSuccess, onClose, showAlert, categoryId, initialData }) => {
     const [title, setTitle] = useState('');
     const [status, setStatus] = useState('Active');
@@ -12,7 +11,6 @@ const AssetItemForm = ({ onSuccess, onClose, showAlert, categoryId, initialData 
     const [openDropdown, setOpenDropdown] = useState(null);
     const formRef = useRef(null);
 
-    // REASON: Populate form if initialData exists (Edit Mode)
     useEffect(() => {
         if (initialData) {
             setTitle(initialData.title || '');
@@ -55,20 +53,16 @@ const AssetItemForm = ({ onSuccess, onClose, showAlert, categoryId, initialData 
         payload.append('title', title);
         payload.append('status', status);
         payload.append('category', categoryId); 
-        
-        // Chỉ gửi file ảnh nếu người dùng thực sự chọn ảnh mới
         if (imageFile) {
             payload.append('image', imageFile);
         }
 
         try {
             if (initialData) {
-                // EDIT MODE (PUT)
                 await axiosClient.put(`processes/items/${initialData.id}/`, payload, {
                     headers: { 'Content-Type': 'multipart/form-data' }
                 });
             } else {
-                // CREATE MODE (POST)
                 await axiosClient.post('processes/items/', payload, {
                     headers: { 'Content-Type': 'multipart/form-data' }
                 });
@@ -89,7 +83,6 @@ const AssetItemForm = ({ onSuccess, onClose, showAlert, categoryId, initialData 
 
     return (
         <form ref={formRef} onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
-            {/* Title Field */}
             <div>
                 <label className="block text-sm font-semibold text-slate-700 mb-1.5">Tên tài sản <span className="text-red-500">*</span></label>
                 <input 
@@ -99,7 +92,6 @@ const AssetItemForm = ({ onSuccess, onClose, showAlert, categoryId, initialData 
                 />
             </div>
 
-            {/* Image Field */}
             <div>
                 <label className="block text-sm font-semibold text-slate-700 mb-1.5">Hình ảnh tài sản</label>
                 {imagePreview ? (
@@ -124,7 +116,6 @@ const AssetItemForm = ({ onSuccess, onClose, showAlert, categoryId, initialData 
                 )}
             </div>
 
-            {/* Status Dropdown */}
             <div className="relative">
                 <label className="block text-sm font-semibold text-slate-700 mb-1.5">Trạng thái</label>
                 <div 
@@ -151,7 +142,6 @@ const AssetItemForm = ({ onSuccess, onClose, showAlert, categoryId, initialData 
                 )}
             </div>
             
-            {/* Buttons */}
             <div className="flex flex-col-reverse sm:flex-row gap-3 pt-5 mt-2 border-t border-slate-200">
                 <button type="button" onClick={onClose} className="w-full sm:flex-1 px-4 py-3 sm:py-2.5 border-2 border-slate-300 text-slate-600 font-bold rounded-xl hover:bg-slate-200 hover:text-slate-800 transition-all cursor-pointer">
                     Hủy

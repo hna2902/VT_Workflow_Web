@@ -19,6 +19,9 @@ const ProcessListView = () => {
     const [processes, setProcesses] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
+    const [isCommentsExpanded, setIsCommentsExpanded] = useState(false);
+    const [isDocsExpanded, setIsDocsExpanded] = useState(true);
+    const [commentsCount, setCommentsCount] = useState(0);
 
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [deleteModal, setDeleteModal] = useState({ isOpen: false, processItem: null });
@@ -32,8 +35,6 @@ const ProcessListView = () => {
     const showAlert = (title, message, type) => setAlertConfig({ isOpen: true, title, message, type });
     const closeAlert = () => setAlertConfig({ ...alertConfig, isOpen: false });
 
-    // REASON: Fetch Workflow context and its child Processes. 
-    // Resolving hierarchy to check permissions correctly.
     const fetchData = useCallback(async () => {
         try {
             const [wfRes, processRes] = await Promise.all([
@@ -56,9 +57,6 @@ const ProcessListView = () => {
             }
             
             setIsPrivileged(hasPrivilege);
-            
-            // REASON: Assuming processes don't have a status field based on your serializer, 
-            // we sort them by 'step' order before setting state.
             const sortedProcesses = processRes.data.sort((a, b) => a.step - b.step);
             setProcesses(sortedProcesses);
             
@@ -68,7 +66,6 @@ const ProcessListView = () => {
             setLoading(false);
             showAlert("Lỗi", "Không thể tải dữ liệu!", "error");
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [workflowId, currentUserId, currentUserRole]);
 
     useEffect(() => {
@@ -122,10 +119,14 @@ const ProcessListView = () => {
         }
     };
 
+    const oldImages = workflowInfo?.files?.filter(f => f.file_type === 'image') || [];
+    const oldVideos = workflowInfo?.files?.filter(f => f.file_type === 'video') || [];
+    const oldDocuments = workflowInfo?.files?.filter(f => f.file_type === 'document') || [];
+
     return (
         <main className="flex flex-col flex-1 bg-slate-50 h-full overflow-hidden">
             
-            {/* HEADER: Injecting Workflow context into the UserHeader */}
+            {/* HEADER */}
             <UserHeader 
                 searchPlaceholder="Tìm kiếm bước..."
                 searchTerm={searchTerm}
@@ -135,14 +136,13 @@ const ProcessListView = () => {
                 
                 showContext={!!workflowInfo} 
                 onBackClick={() => navigate(-1)}
-                // REASON: Workflows usually don't have images, so we pass null or a default icon logic if needed
                 contextImage={null} 
                 hideContextImage={true}
                 contextTitle={workflowInfo ? workflowInfo.name : 'Đang tải...'}
                 contextLabel="Quy trình"
             />
 
-            {/* BODY: Split Layout */}
+            {/* BODY */}
             <div className="flex-1 flex flex-col lg:flex-row overflow-hidden relative">
                 
                 {/* LEFT SIDE: Vertical List */}
@@ -150,35 +150,45 @@ const ProcessListView = () => {
                     <div className="max-w-4xl mx-auto w-full">
                         
                         {/* WORKFLOW MAIN ATTACHMENT */}
-                        {(workflowInfo?.image_file || workflowInfo?.video_file || workflowInfo?.document_file) && (
-                            <div className="mb-8 p-4 sm:p-5 bg-white rounded-xl border border-slate-200 shadow-sm flex flex-col gap-4">
-                                <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2 border-b border-slate-100 pb-2">
-                                    <span className="w-2 h-2 rounded-full bg-blue-500"></span>
-                                    Tài liệu / Video chính của quy trình
-                                </h3>
-                                
-                                <div className="flex flex-col gap-4">
-                                    {/* Image always on top */}
-                                    {workflowInfo.image_file && (
-                                        <div className="rounded-xl overflow-hidden bg-slate-50 border border-slate-100 shadow-sm">
-                                            {renderFile(workflowInfo.image_file)}
-                                        </div>
-                                    )}
-                                    
-                                    {/* Video in middle */}
-                                    {workflowInfo.video_file && (
-                                        <div className="rounded-xl overflow-hidden bg-black border border-slate-800 shadow-sm">
-                                            {renderFile(workflowInfo.video_file)}
-                                        </div>
-                                    )}
-                                    
-                                    {/* Document at bottom */}
-                                    {workflowInfo.document_file && (
-                                        <div className="flex justify-start">
-                                            {renderFile(workflowInfo.document_file)}
-                                        </div>
-                                    )}
+                        {(oldImages.length > 0 || oldVideos.length > 0 || oldDocuments.length > 0) && (
+                            <div className="mb-8 bg-white rounded-xl border border-slate-200 shadow-sm flex flex-col overflow-hidden">
+                                <div 
+                                    className="p-4 sm:p-5 flex justify-between items-center bg-slate-50 cursor-pointer hover:bg-slate-100 transition-colors"
+                                    onClick={() => setIsDocsExpanded(!isDocsExpanded)}
+                                >
+                                    <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
+                                        <span className="w-2 h-2 rounded-full bg-blue-500"></span>
+                                        Tài liệu / Video chính của quy trình
+                                    </h3>
+                                    <span className="text-xs font-bold text-blue-600 bg-blue-100 px-3 py-1 rounded-full shrink-0">
+                                        {isDocsExpanded ? 'Thu gọn' : 'Mở rộng'}
+                                    </span>
                                 </div>
+                                
+                                {isDocsExpanded && (
+                                    <div className="p-4 sm:p-5 border-t border-slate-100 grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        {/* Images */}
+                                        {oldImages.map(img => (
+                                            <div key={img.id} className="rounded-xl overflow-hidden bg-slate-50 border border-slate-100 shadow-sm col-span-1 md:col-span-2">
+                                                {renderFile(img.file)}
+                                            </div>
+                                        ))}
+                                        
+                                        {/* Videos */}
+                                        {oldVideos.map(vid => (
+                                            <div key={vid.id} className="rounded-xl overflow-hidden bg-black border border-slate-800 shadow-sm col-span-1 md:col-span-2">
+                                                {renderFile(vid.file)}
+                                            </div>
+                                        ))}
+                                        
+                                        {/* Documents */}
+                                        {oldDocuments.map(doc => (
+                                            <div key={doc.id} className="flex justify-start col-span-1 md:col-span-2">
+                                                {renderFile(doc.file)}
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
                             </div>
                         )}
 
@@ -207,8 +217,28 @@ const ProcessListView = () => {
                 </div>
 
                 {/* RIGHT SIDE / BOTTOM SIDE: Comments Sidebar */}
-                <div className="w-full lg:w-80 xl:w-96 shrink-0 bg-white shadow-[-4px_0_15px_-3px_rgba(0,0,0,0.05)] lg:z-10 h-[50vh] lg:h-auto border-t lg:border-t-0 lg:border-l border-slate-200">
-                    <WorkflowComments workflowId={workflowId} />
+                <div className={`w-full lg:w-80 xl:w-96 shrink-0 bg-white shadow-[-4px_0_15px_-3px_rgba(0,0,0,0.05)] lg:z-10 border-t lg:border-t-0 lg:border-l border-slate-200 transition-all duration-300 flex flex-col ${isCommentsExpanded ? 'h-[35vh] lg:h-auto' : 'h-[50px] lg:h-auto'}`}>
+                    {/* Universal Comments Header Bar */}
+                    <div 
+                        className="flex items-center justify-between px-4 h-[50px] bg-slate-50 border-b border-slate-200 cursor-pointer lg:cursor-default hover:bg-slate-100 lg:hover:bg-slate-50 shrink-0" 
+                        onClick={() => {
+                            if (window.innerWidth < 1024) setIsCommentsExpanded(!isCommentsExpanded);
+                        }}
+                    >
+                        <span className="font-bold text-slate-700 text-sm flex items-center gap-2">
+                            <span className="bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full text-xs">💬</span>
+                            Thảo luận quy trình
+                            <span className="bg-slate-200 text-slate-700 text-xs px-2 py-0.5 rounded-md ml-1">{commentsCount}</span>
+                        </span>
+                        <span className="lg:hidden text-xs font-bold text-blue-600 bg-blue-50 px-3 py-1 rounded-full">
+                            {isCommentsExpanded ? 'Thu gọn' : 'Mở rộng'}
+                        </span>
+                    </div>
+                    
+                    {/* Comments Content */}
+                    <div className={`flex-1 overflow-hidden ${!isCommentsExpanded ? 'hidden lg:block' : 'block'}`}>
+                        <WorkflowComments workflowId={workflowId} onCountChange={setCommentsCount} />
+                    </div>
                 </div>
             </div>
 

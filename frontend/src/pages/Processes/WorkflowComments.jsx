@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axiosClient from '../../utils/axiosClients';
-import defaultAvatar from '../../assets/default-avatar.png';
+import defaultAvatar from '../../assets/default-avatar.jpg';
 import { FaPaperPlane, FaUserCircle, FaPaperclip, FaTimes, FaFile, FaVideo } from 'react-icons/fa';
 import Modal from '../../components/common/Modal';
 
-const WorkflowComments = ({ workflowId }) => {
+const WorkflowComments = ({ workflowId, onCountChange }) => {
     const [comments, setComments] = useState([]);
     const [newComment, setNewComment] = useState('');
     const [selectedFiles, setSelectedFiles] = useState([]);
@@ -18,6 +18,13 @@ const WorkflowComments = ({ workflowId }) => {
 
     const currentUserUsername = localStorage.getItem('user_username') || sessionStorage.getItem('user_username');
     const currentUserRole = localStorage.getItem('user_role') || sessionStorage.getItem('user_role');
+
+    // Notify parent of comment count changes
+    useEffect(() => {
+        if (onCountChange) {
+            onCountChange(comments.length);
+        }
+    }, [comments.length, onCountChange]);
 
     const renderFileUrl = (fileUrl) => {
         if (!fileUrl) return null;
@@ -128,17 +135,6 @@ const WorkflowComments = ({ workflowId }) => {
 
     return (
         <div className="flex flex-col h-full bg-white border-l border-slate-200">
-            {/* HEADER */}
-            <div className="px-4 py-4 border-b border-slate-200 bg-slate-50 shrink-0 flex items-center justify-between">
-                <div>
-                    <h3 className="font-bold text-slate-800">Thảo luận</h3>
-                    <p className="text-xs text-slate-500 mt-0.5">Trao đổi nội bộ về quy trình này</p>
-                </div>
-                <div className="bg-blue-100 text-blue-700 text-xs font-bold px-2 py-1 rounded-md">
-                    {comments.length}
-                </div>
-            </div>
-
             {/* MESSAGE LIST */}
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
                 {loading ? (
@@ -147,14 +143,14 @@ const WorkflowComments = ({ workflowId }) => {
                     <div className="text-center text-slate-500 text-sm py-10">Chưa có bình luận nào. Hãy là người đầu tiên!</div>
                 ) : (
                     comments.map((comment) => (
-                        <div key={comment.id} className="flex gap-3">
+                        <div key={comment.id} className="flex gap-3 group">
                             <img 
                                 src={comment.user_avatar ? renderFileUrl(comment.user_avatar) : defaultAvatar} 
                                 alt="Avatar" 
                                 className="w-8 h-8 rounded-full object-cover shrink-0 mt-1 border border-slate-200" 
                             />
-                            <div className="flex flex-col">
-                                <div className="flex items-center gap-2 mb-1">
+                            <div className="flex flex-col min-w-0 flex-1">
+                                <div className="flex items-center flex-wrap gap-2 mb-1">
                                     <span className="font-semibold text-sm text-slate-800 flex items-center gap-2">
                                         {comment.user_name || comment.user_username || comment.user_email || 'Người dùng'}
                                         {comment.user_role === 'Admin' && (
@@ -164,8 +160,18 @@ const WorkflowComments = ({ workflowId }) => {
                                     <span className="text-[10px] text-slate-400">
                                         {new Date(comment.create_at).toLocaleString('vi-VN')}
                                     </span>
+                                    
+                                    {/* Action Menu: Delete/Edit */}
+                                    {(comment.user_username === currentUserUsername || currentUserRole === 'Admin') && (
+                                        <div className="opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity flex items-center gap-1.5 ml-1">
+                                            {comment.user_username === currentUserUsername && (
+                                                <button onClick={() => { setEditingCommentId(comment.id); setEditContent(comment.content); setEditSelectedFiles([]); }} className="text-[10px] font-bold text-slate-400 hover:text-blue-600 hover:underline transition-colors" title="Sửa bình luận">Sửa</button>
+                                            )}
+                                            <button onClick={() => setDeletingCommentId(comment.id)} className="text-[10px] font-bold text-slate-400 hover:text-red-600 hover:underline transition-colors" title="Xóa bình luận">Xóa</button>
+                                        </div>
+                                    )}
                                 </div>
-                                <div className="bg-slate-100 px-3 py-2 rounded-2xl rounded-tl-sm text-slate-700 text-sm whitespace-pre-wrap relative group">
+                                <div className="bg-slate-100 px-3 py-2 rounded-2xl rounded-tl-sm text-slate-700 text-sm whitespace-pre-wrap relative w-fit max-w-full">
                                     {editingCommentId === comment.id ? (
                                         <div className="flex flex-col gap-2 min-w-[200px] mt-1 mb-1">
                                             <textarea
@@ -229,17 +235,7 @@ const WorkflowComments = ({ workflowId }) => {
                                         <>
                                             {comment.content}
                                             
-                                            {/* Action Menu: Delete/Edit */}
-                                            {(comment.user_username === currentUserUsername || currentUserRole === 'Admin') && (
-                                                <div className="absolute -top-3 -right-2 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 bg-white px-1.5 py-0.5 rounded-lg shadow-md border border-slate-200 z-10">
-                                                    {comment.user_username === currentUserUsername && (
-                                                        <button onClick={() => { setEditingCommentId(comment.id); setEditContent(comment.content); setEditSelectedFiles([]); }} className="text-[10px] font-bold text-slate-500 hover:text-blue-600 p-1" title="Sửa bình luận">Sửa</button>
-                                                    )}
-                                                    <button onClick={() => setDeletingCommentId(comment.id)} className="text-[10px] font-bold text-slate-500 hover:text-red-600 p-1" title="Xóa bình luận">Xóa</button>
-                                                </div>
-                                            )}
-                                            
-                                            {/* Hiển thị file đính kèm nếu có */}
+                                            {/* (Actions moved to header) */}
                                             {comment.images && comment.images.length > 0 && (
                                                 <div className="grid grid-cols-2 gap-2 mt-2">
                                                     {comment.images.map((img, idx) => {

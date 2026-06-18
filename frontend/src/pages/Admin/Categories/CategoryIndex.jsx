@@ -44,7 +44,6 @@ const CategoryIndex = () => {
         showAlert("Thành công", "Đã thêm danh mục mới!", "success");
     };
 
-    // Hàm Save nhận dữ liệu từ Component con (CategoryRow) truyền lên
     const handleSaveEdit = async (id, updatedData) => {
         try {
             await axiosClient.put(`processes/categories/${id}/`, updatedData);
@@ -86,7 +85,6 @@ const CategoryIndex = () => {
             loading={loading}
             items={currentItems}
             renderItem={(cat) => (
-                // ĐÂY LÀ CHỖ GỌN NHẤT: Thay vì 60 dòng HTML, giờ chỉ còn 1 dòng Component
                 <CategoryRow 
                     key={cat.id} 
                     category={cat} 

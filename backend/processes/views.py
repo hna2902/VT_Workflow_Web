@@ -2,8 +2,8 @@ from rest_framework import viewsets
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
 
-from .models import Category, AssetItem, Workflow, Process, ProcessImage
-from .serializers import CategorySerializer, AssetItemSerializer, WorkflowSerializer, ProcessSerializer, ProcessImageSerializer
+from .models import Category, AssetItem, Workflow, WorkflowFile, Process, ProcessImage
+from .serializers import CategorySerializer, AssetItemSerializer, WorkflowSerializer, WorkflowFileSerializer, ProcessSerializer, ProcessImageSerializer
 from .permissions import IsAdminOrCategoryLeader
 
 
@@ -49,6 +49,44 @@ class WorkflowViewSet(viewsets.ModelViewSet):
         if self.action == 'create':
             return [IsAdminUser()] 
         elif self.action in ['update', 'partial_update', 'destroy']:
+            return [IsAdminOrCategoryLeader()]
+        return [IsAuthenticated()]
+
+    def _save_workflow_files(self, workflow, request):
+        for image in request.FILES.getlist('images[]'):
+            WorkflowFile.objects.create(workflow=workflow, file=image, file_type='image')
+        for video in request.FILES.getlist('videos[]'):
+            WorkflowFile.objects.create(workflow=workflow, file=video, file_type='video')
+        for document in request.FILES.getlist('documents[]'):
+            WorkflowFile.objects.create(workflow=workflow, file=document, file_type='document')
+
+    def create(self, request, *args, **kwargs):
+        response = super().create(request, *args, **kwargs)
+        workflow_id = response.data.get('id')
+        if workflow_id:
+            workflow = Workflow.objects.get(id=workflow_id)
+            self._save_workflow_files(workflow, request)
+            # Tải lại dữ liệu để trả về danh sách file mới cập nhật
+            serializer = self.get_serializer(workflow)
+            response.data = serializer.data
+        return response
+
+    def update(self, request, *args, **kwargs):
+        response = super().update(request, *args, **kwargs)
+        workflow = self.get_object()
+        self._save_workflow_files(workflow, request)
+        # Tải lại dữ liệu để trả về danh sách file mới cập nhật
+        serializer = self.get_serializer(workflow)
+        response.data = serializer.data
+        return response
+
+class WorkflowFileViewSet(viewsets.ModelViewSet):
+    queryset = WorkflowFile.objects.all()
+    serializer_class = WorkflowFileSerializer
+    parser_classes = [MultiPartParser, FormParser, JSONParser]
+
+    def get_permissions(self):
+        if self.action in ['create', 'update', 'partial_update', 'destroy']:
             return [IsAdminOrCategoryLeader()]
         return [IsAuthenticated()]
     

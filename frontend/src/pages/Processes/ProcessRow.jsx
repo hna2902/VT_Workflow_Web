@@ -2,8 +2,7 @@ import React, { useState } from 'react';
 import { FaTrash, FaChevronDown, FaChevronUp, FaPaperclip, FaFile, FaVideo, FaImage } from 'react-icons/fa';
 import axiosClient from '../../utils/axiosClients';
 
-// REASON: This row is intentionally lightweight. It only displays the 'step' and 'title'.
-// Editing is delegated to the detailed view, while deletion is kept here for quick management.
+// Editing is delegated to the detailed view, while deletion is kept here for quick management
 const ProcessRow = ({ processItem, onDelete, isPrivileged, onUpdateSuccess }) => {
     const [isExpanded, setIsExpanded] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
@@ -51,8 +50,6 @@ const ProcessRow = ({ processItem, onDelete, isPrivileged, onUpdateSuccess }) =>
     const handleCancelEdit = () => {
         setIsEditing(false);
         setNewFiles([]);
-        // Revert existingImages might be tricky if user deleted some from backend already.
-        // The safest is to let it be, or refresh from parent.
     };
 
     const handleDeleteExistingFile = async (imageId) => {
@@ -100,33 +97,26 @@ const ProcessRow = ({ processItem, onDelete, isPrivileged, onUpdateSuccess }) =>
     return (
         <div className={`mb-3 transition-all duration-300 bg-white border rounded-xl overflow-hidden shadow-sm hover:shadow-md ${isExpanded ? 'border-blue-400 ring-1 ring-blue-100' : 'border-slate-200 hover:border-blue-300'}`}>
             
-            {/* PHẦN HEADER: Luôn hiển thị (Nhấn để mở rộng) */}
+            {/* HEADER */}
             <div 
                 onClick={() => setIsExpanded(!isExpanded)}
                 className="flex items-center justify-between p-4 cursor-pointer group bg-white"
             >
                 <div className="flex items-center gap-4 flex-1 pr-4">
-                    {/* Cục hiển thị Step */}
                     <div className={`w-10 h-10 rounded-full flex items-center justify-center font-black shrink-0 transition-colors ${isExpanded ? 'bg-blue-600 text-white shadow-md' : 'bg-slate-100 text-slate-500 group-hover:bg-blue-50 group-hover:text-blue-600'}`}>
                         {processItem.step || '-'}
                     </div>
-                    
-                    {/* Tên bước */}
                     <h3 className={`text-base sm:text-lg font-bold transition-colors line-clamp-1 ${isExpanded ? 'text-blue-700' : 'text-slate-800 group-hover:text-blue-600'}`}>
                         {processItem.name}
                     </h3>
                 </div>
                 
-                {/* Khu vực nút bấm bên phải */}
                 <div className="flex items-center gap-3 shrink-0">
-                    {/* Báo hiệu có file đính kèm */}
                     {!isExpanded && existingImages && existingImages.length > 0 && (
                         <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 bg-slate-100 text-slate-500 rounded-lg text-xs font-semibold">
                             <FaPaperclip /> {existingImages.length}
                         </div>
                     )}
-
-                    {/* Nút Sửa & Xóa (Dành cho Admin/Leader) */}
                     {isPrivileged && (
                         <div className="flex items-center gap-1">
                             {!isEditing && (
@@ -150,27 +140,21 @@ const ProcessRow = ({ processItem, onDelete, isPrivileged, onUpdateSuccess }) =>
                             </button>
                         </div>
                     )}
-
-                    {/* Icon Mở rộng/Thu gọn */}
                     <div className={`p-1.5 rounded-full transition-colors ${isExpanded ? 'bg-blue-50 text-blue-600' : 'text-slate-400 group-hover:text-blue-500'}`}>
                         {isExpanded ? <FaChevronUp size={14} /> : <FaChevronDown size={14} />}
                     </div>
                 </div>
             </div>
 
-            {/* PHẦN BODY: Chỉ hiển thị khi isExpanded = true */}
+            {/* BODY isExpanded = true */}
             {isExpanded && !isEditing && (
                 <div className="p-4 sm:p-5 bg-slate-50 border-t border-slate-100 animate-in slide-in-from-top-2 fade-in duration-200">
-                    
-                    {/* Nội dung chi tiết */}
                     <div className="mb-4">
                         <h4 className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-2">Hướng dẫn chi tiết</h4>
                         <p className="text-slate-700 text-sm sm:text-base leading-relaxed whitespace-pre-wrap">
                             {processItem.content || <span className="italic text-slate-400">Không có mô tả chi tiết.</span>}
                         </p>
                     </div>
-
-                    {/* Danh sách file đính kèm */}
                     {existingImages && existingImages.length > 0 && (
                         <div>
                             <h4 className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-3">File đính kèm</h4>
@@ -210,8 +194,6 @@ const ProcessRow = ({ processItem, onDelete, isPrivileged, onUpdateSuccess }) =>
                     )}
                 </div>
             )}
-
-            {/* PHẦN FORM CHỈNH SỬA: Hiển thị khi isEditing = true */}
             {isExpanded && isEditing && (
                 <div className="p-4 sm:p-5 bg-indigo-50/50 border-t border-indigo-100 animate-in fade-in duration-200">
                     <div className="space-y-4">
@@ -245,7 +227,6 @@ const ProcessRow = ({ processItem, onDelete, isPrivileged, onUpdateSuccess }) =>
                             />
                         </div>
 
-                        {/* Quản lý File hiện tại */}
                         {existingImages.length > 0 && (
                             <div>
                                 <label className="block text-xs font-bold text-slate-700 mb-2">File đã đính kèm (Nhấn X để xóa)</label>
@@ -277,7 +258,6 @@ const ProcessRow = ({ processItem, onDelete, isPrivileged, onUpdateSuccess }) =>
                             </div>
                         )}
 
-                        {/* Thêm File mới */}
                         <div>
                             <label className="block text-xs font-bold text-slate-700 mb-1">Đính kèm thêm File mới (Tùy chọn)</label>
                             <input 
@@ -304,7 +284,6 @@ const ProcessRow = ({ processItem, onDelete, isPrivileged, onUpdateSuccess }) =>
                             )}
                         </div>
 
-                        {/* Nút hành động */}
                         <div className="flex justify-end gap-2 pt-3 border-t border-indigo-100">
                             <button onClick={handleCancelEdit} className="px-4 py-2 text-xs font-bold bg-slate-200 text-slate-700 rounded-lg hover:bg-slate-300">
                                 Hủy

@@ -21,7 +21,6 @@ const CategoryRow = ({ category, onSave, onDelete }) => {
     };
 
     const handleSaveClick = () => {
-        // Đẩy dữ liệu ngược lên file Index để gọi API
         onSave(category.id, { title: localTitle, status: localStatus });
         setIsEditing(false);
     };
@@ -30,7 +29,6 @@ const CategoryRow = ({ category, onSave, onDelete }) => {
         <div className="flex flex-col sm:flex-row sm:items-start justify-between p-4 transition-colors bg-white border border-l-4 border-slate-300 border-l-blue-500 rounded shadow-sm hover:bg-slate-50 gap-4 sm:gap-0">
             <div className="flex-1 w-full mr-0 sm:mr-4">
                 {isEditing ? (
-                    // TRẠNG THÁI EDIT
                     <div className="flex flex-col gap-3 w-full sm:max-w-sm">
                         <input 
                             type="text" 
@@ -63,9 +61,7 @@ const CategoryRow = ({ category, onSave, onDelete }) => {
                         </div>
                     </div>
                 ) : (
-                    // TRẠNG THÁI XEM
                     <>
-                        {/* 3. Thêm onClick và CSS cho tiêu đề */}
                         <h3 
                             onClick={() => navigate(`/categories/${category.id}/assets`)} // Đổi URL này cho khớp với Route của bạn nhé
                             className="text-lg font-bold text-blue-600 hover:text-blue-800 hover:underline cursor-pointer break-words w-fit transition-colors"
@@ -82,7 +78,6 @@ const CategoryRow = ({ category, onSave, onDelete }) => {
                 )}
             </div>
             
-            {/* Cột nút bấm */}
             <div className="flex flex-row sm:flex-col gap-2 shrink-0 w-full sm:w-20 mt-3 sm:mt-0">
                 {isEditing ? (
                     <>

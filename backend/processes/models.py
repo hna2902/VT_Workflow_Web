@@ -42,23 +42,30 @@ class Workflow(models.Model):
     item = models.ForeignKey(AssetItem, on_delete=models.CASCADE, related_name='workflow')
     name = models.CharField(max_length=255)
     description = models.TextField(blank=True, null=True)
-    image_file = models.ImageField(upload_to='workflows/images/', blank=True, null=True)
-    video_file = models.FileField(upload_to='workflows/videos/', blank=True, null=True)
-    document_file = models.FileField(upload_to='workflows/documents/', blank=True, null=True)
     create_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f"{self.item.title} - {self.name}"
 
-@receiver(post_delete, sender=Workflow)
-def delete_workflow_files(sender, instance, **kwargs):
-    """Delete files from filesystem when Workflow object is deleted."""
-    if instance.image_file:
-        instance.image_file.delete(save=False)
-    if instance.video_file:
-        instance.video_file.delete(save=False)
-    if instance.document_file:
-        instance.document_file.delete(save=False)
+class WorkflowFile(models.Model):
+    FILE_TYPES = (
+        ('image', 'Image'),
+        ('video', 'Video'),
+        ('document', 'Document'),
+    )
+    workflow = models.ForeignKey(Workflow, on_delete=models.CASCADE, related_name='files')
+    file = models.FileField(upload_to='workflows/files/')
+    file_type = models.CharField(max_length=20, choices=FILE_TYPES)
+    create_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.file_type} for {self.workflow.name}"
+
+@receiver(post_delete, sender=WorkflowFile)
+def delete_workflow_file(sender, instance, **kwargs):
+    """Delete file from filesystem when WorkflowFile object is deleted."""
+    if instance.file:
+        instance.file.delete(save=False)
     
 # Process table
 # Detailed step-by-step procedures within an overarching Workflow

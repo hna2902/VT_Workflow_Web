@@ -106,9 +106,8 @@ const UserRow = ({ user, categories, onSave, onDelete }) => {
                     </div>
                 </div>
 
-                {/* CỘT 2: Nhập Password mới & Chọn Leader */}
                 <div className="flex-1 flex flex-col sm:flex-row gap-4 pt-1">
-                    {/* Đổi mật khẩu */}
+                    {/* Password change */}
                     <div className="flex-1">
                         <label className="block text-xs font-bold text-slate-600 mb-1.5 uppercase tracking-wide">Đổi mật khẩu</label>
                         <div className="relative">
@@ -129,7 +128,6 @@ const UserRow = ({ user, categories, onSave, onDelete }) => {
                         </div>
                     </div>
 
-                    {/* Giao phụ trách (Leader) */}
                     <div className="flex-1 relative">
                         <label className="block text-xs font-bold text-slate-600 mb-1.5 uppercase tracking-wide">Giao phụ trách</label>
                         <div 
@@ -164,7 +162,6 @@ const UserRow = ({ user, categories, onSave, onDelete }) => {
                     </div>
                 </div>
 
-                {/* CỘT 3: Các Nút Hành Động */}
                 <div className="flex flex-row lg:flex-col gap-2 shrink-0 lg:w-24 mt-4 lg:mt-0 pt-1">
                     <button 
                         onClick={handleUpdate} 
@@ -243,7 +240,6 @@ const UsersIndex = () => {
     };
 
     const handleDeleteUser = (user) => {
-    // Kiểm tra cờ bảo mật trong sessionStorage (dùng getSessionStorage của sếp)
     const isAuthorized = getSessionStorage('is_delete_authorized', 'false') === 'true';
         setDeleteModal({
             isOpen: true,
@@ -251,20 +247,13 @@ const UsersIndex = () => {
             requiresPass: !isAuthorized
         });
     };
-
-    // Hàm thực thi xóa sau khi xác nhận
     const executeDelete = async () => {
         try {
             if (deleteModal.requiresPass) {
-                // API verify mật khẩu
                 await axiosClient.post('users/verify-password/', { password: confirmPassword });
                 setSessionStorage('is_delete_authorized', 'true');
             }
-
-            // Gọi API xóa
             await axiosClient.delete(`users/${deleteModal.user.id}/`);
-            
-            // Cập nhật giao diện
             setUsers(users.filter(u => u.id !== deleteModal.user.id));
             setDeleteModal({ isOpen: false, user: null, requiresPass: false });
             setConfirmPassword('');

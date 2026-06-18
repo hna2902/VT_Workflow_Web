@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import axiosClient from '../../utils/axiosClients';
 import { getUserStorage, setUserStorage } from '../../utils/storage';
 import logo from '../../assets/logo.png'; 
-import defaultAvatar from '../../assets/default-avatar.png'; 
+import defaultAvatar from '../../assets/default-avatar.jpg'; 
 import { 
     FaBell, 
     FaCog, 

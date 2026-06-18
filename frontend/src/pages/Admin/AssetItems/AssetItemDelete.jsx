@@ -1,7 +1,6 @@
 import React from 'react';
 import Modal from '../../../components/common/Modal';
 
-// Component responsible for rendering the delete confirmation modal for Asset Items
 const AssetItemDelete = ({ isOpen, item, onClose, onConfirm }) => {
     return (
         <Modal isOpen={isOpen} onClose={onClose} title="Xác nhận xóa">
@@ -16,7 +15,7 @@ const AssetItemDelete = ({ isOpen, item, onClose, onConfirm }) => {
                     >
                         Hủy
                     </button>
-                    {/* Primary action button for deletion */}
+
                     <button 
                         onClick={onConfirm}
                         className="flex-1 px-4 py-2.5 bg-red-600 text-white font-bold rounded-xl hover:bg-red-700 transition-colors"

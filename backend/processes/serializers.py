@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Category, AssetItem, Process, ProcessImage, Workflow
+from .models import Category, AssetItem, Process, ProcessImage, Workflow, WorkflowFile
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
@@ -22,7 +22,14 @@ class AssetItemSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Asset title cannot be empty")
         return value
     
+class WorkflowFileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = WorkflowFile
+        fields = '__all__'
+        read_only_fields = ['create_at']
+
 class WorkflowSerializer(serializers.ModelSerializer):
+    files = WorkflowFileSerializer(many=True, read_only=True)
     class Meta:
         model = Workflow
         fields = '__all__'

@@ -46,7 +46,6 @@ const AssetItemRow = ({ item, onSave, onDelete }) => {
 
             <div className="flex-1 w-full mr-0 sm:mr-4">
                 {isEditing ? (
-                    // TRẠNG THÁI EDIT
                     <div className="flex flex-col gap-3 w-full sm:max-w-sm mt-1">
                         <input 
                             type="text" 
@@ -73,9 +72,7 @@ const AssetItemRow = ({ item, onSave, onDelete }) => {
                         </div>
                     </div>
                 ) : (
-                    // TRẠNG THÁI XEM
                     <div className="mt-1">
-                        {/* 3. THÊM SỰ KIỆN CLICK VÀO ĐÂY */}
                         <h3 
                             onClick={() => navigate(`/admin/assets/${item.id}/workflows`)} // Đổi URL này cho khớp với Route bạn đã cấu hình bên App.jsx nhé!
                             className="text-lg font-bold text-blue-600 hover:text-blue-800 hover:underline cursor-pointer break-words w-fit transition-colors"
@@ -93,7 +90,6 @@ const AssetItemRow = ({ item, onSave, onDelete }) => {
                 )}
             </div>
             
-            {/* Cột nút bấm */}
             <div className="flex flex-row sm:flex-col gap-2 shrink-0 w-full sm:w-20 mt-3 sm:mt-0">
                 {isEditing ? (
                     <>

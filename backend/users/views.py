@@ -1,3 +1,4 @@
+from django.conf import settings
 from rest_framework import generics
 from rest_framework.permissions import AllowAny
 from django.contrib.auth import get_user_model
@@ -49,10 +50,17 @@ class PasswordResetRequestView(APIView):
                 token = PasswordResetTokenGenerator().make_token(user)
                 # Link must point to the Frontend routing
                 reset_link = f"http://localhost:5173/reset_password?uid={uidb64}&token={token}"
+                
+                # REASON: Print directly to console for easy testing without dealing with MIME quoted-printable encoding
+                print(f"\n========== PASSWORD RESET REQUEST ==========\n{reset_link}\n==================================================\n")
+                
+                # Use settings.EMAIL_HOST_USER as the sender, fallback to noreply
+                sender_email = settings.EMAIL_HOST_USER if settings.EMAIL_HOST_USER else "noreply@vtjsc.com"
+                
                 send_mail(
                     subject = "Password Reset Request",
-                    message = f"Click the link below to reset your password",
-                    from_email = "noreply@vtjsc.com",
+                    message = f"Click the link below to reset your password:\n\n{reset_link}",
+                    from_email = sender_email,
                     recipient_list=[email],
                     fail_silently = False
                 )

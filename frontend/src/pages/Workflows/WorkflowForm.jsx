@@ -7,9 +7,9 @@ import axiosClient from '../../utils/axiosClients';
 const WorkflowForm = ({ onSuccess, onClose, showAlert, itemId }) => {
     const [name, setName] = useState('');
     const [description, setDescription] = useState('');
-    const [videoFile, setVideoFile] = useState(null);
-    const [imageFile, setImageFile] = useState(null);
-    const [documentFile, setDocumentFile] = useState(null);
+    const [videoFiles, setVideoFiles] = useState([]);
+    const [imageFiles, setImageFiles] = useState([]);
+    const [documentFiles, setDocumentFiles] = useState([]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -18,9 +18,9 @@ const WorkflowForm = ({ onSuccess, onClose, showAlert, itemId }) => {
         formData.append('name', name);
         formData.append('description', description);
         formData.append('item', itemId);
-        if (videoFile) formData.append('video_file', videoFile);
-        if (imageFile) formData.append('image_file', imageFile);
-        if (documentFile) formData.append('document_file', documentFile);
+        if (videoFiles.length > 0) videoFiles.forEach(f => formData.append('videos[]', f));
+        if (imageFiles.length > 0) imageFiles.forEach(f => formData.append('images[]', f));
+        if (documentFiles.length > 0) documentFiles.forEach(f => formData.append('documents[]', f));
 
         try {
             await axiosClient.post('processes/workflows/', formData, {
@@ -79,10 +79,12 @@ const WorkflowForm = ({ onSuccess, onClose, showAlert, itemId }) => {
                         <span className="text-xs font-bold text-slate-600 mb-1">Ảnh bìa / Hình ảnh</span>
                         <input 
                             type="file" 
-                            onChange={(e) => setImageFile(e.target.files[0])}
+                            multiple
+                            onChange={(e) => setImageFiles(Array.from(e.target.files))}
                             className="w-full text-xs text-slate-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:font-semibold file:bg-blue-100 file:text-blue-700 hover:file:bg-blue-200 cursor-pointer"
                             accept="image/*"
                         />
+                        {imageFiles.length > 0 && <span className="text-[10px] text-green-600 font-medium mt-1">Đã chọn {imageFiles.length} ảnh</span>}
                     </div>
                     
                     {/* Video */}
@@ -90,10 +92,12 @@ const WorkflowForm = ({ onSuccess, onClose, showAlert, itemId }) => {
                         <span className="text-xs font-bold text-slate-600 mb-1">Video hướng dẫn</span>
                         <input 
                             type="file" 
-                            onChange={(e) => setVideoFile(e.target.files[0])}
+                            multiple
+                            onChange={(e) => setVideoFiles(Array.from(e.target.files))}
                             className="w-full text-xs text-slate-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:font-semibold file:bg-blue-100 file:text-blue-700 hover:file:bg-blue-200 cursor-pointer"
                             accept="video/*"
                         />
+                        {videoFiles.length > 0 && <span className="text-[10px] text-green-600 font-medium mt-1">Đã chọn {videoFiles.length} video</span>}
                     </div>
 
                     {/* Document */}
@@ -101,10 +105,12 @@ const WorkflowForm = ({ onSuccess, onClose, showAlert, itemId }) => {
                         <span className="text-xs font-bold text-slate-600 mb-1">Tài liệu đính kèm (PDF, Word, Excel...)</span>
                         <input 
                             type="file" 
-                            onChange={(e) => setDocumentFile(e.target.files[0])}
+                            multiple
+                            onChange={(e) => setDocumentFiles(Array.from(e.target.files))}
                             className="w-full text-xs text-slate-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:font-semibold file:bg-blue-100 file:text-blue-700 hover:file:bg-blue-200 cursor-pointer"
                             accept=".pdf,.doc,.docx,.xls,.xlsx,.txt"
                         />
+                        {documentFiles.length > 0 && <span className="text-[10px] text-green-600 font-medium mt-1">Đã chọn {documentFiles.length} tài liệu</span>}
                     </div>
                 </div>
             </div>

@@ -16,7 +16,6 @@ const NotificationCenter = () => {
             // Fetch all notifications for the user
             const res = await axiosClient.get('notifications/notifications/');
             setNotifications(res.data);
-            
             // Auto mark all as read when opening the page
             await axiosClient.patch('notifications/notifications/mark_all_read/');
             
@@ -41,7 +40,6 @@ const NotificationCenter = () => {
     const handleDeleteAll = async () => {
         if (!window.confirm("Bạn có chắc muốn xóa TẤT CẢ thông báo?")) return;
         try {
-            // Because there's no delete_all endpoint, we delete one by one
             await Promise.all(notifications.map(n => axiosClient.delete(`notifications/notifications/${n.id}/`)));
             setNotifications([]);
         } catch (error) {

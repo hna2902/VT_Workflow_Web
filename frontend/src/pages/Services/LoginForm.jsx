@@ -137,7 +137,6 @@ const Login = () => {
                             </Link>
                         </div>
 
-                        {/* Nút Submit */}
                         <button 
                             type="submit" disabled={loading}
                             className={`w-full py-2 mt-2 text-base font-bold text-white transition-all rounded-full shadow-md flex justify-center items-center ${loading ? 'bg-slate-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700 hover:shadow-lg active:scale-95'}`}

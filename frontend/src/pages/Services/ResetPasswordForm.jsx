@@ -14,7 +14,6 @@ const ResetPasswordForm = () => {
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     
-    // Extract token and uid from URL: /reset_password?uid=...&token=...
     const uid = searchParams.get('uid');
     const token = searchParams.get('token');
 
@@ -51,7 +50,6 @@ const ResetPasswordForm = () => {
             }, 3000);
         } catch (err) {
             console.error("Lỗi đặt lại mật khẩu:", err);
-            // Default Django error for invalid token is a list or dict
             setError('Liên kết khôi phục không hợp lệ hoặc đã hết hạn. Vui lòng yêu cầu lại.');
         } finally {
             setLoading(false);
@@ -125,7 +123,6 @@ const ResetPasswordForm = () => {
                             />
                         </div>
 
-                        {/* Nút Submit */}
                         <button 
                             type="submit" disabled={loading}
                             className={`w-full py-2 mt-4 text-base font-bold text-white transition-all rounded-full shadow-md flex justify-center items-center ${loading ? 'bg-slate-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700 hover:shadow-lg active:scale-95'}`}

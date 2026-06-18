@@ -12,21 +12,14 @@ const AssetItemView = () => {
     const { categoryId } = useParams();
     const navigate = useNavigate();
 
-    // CÁC STATE QUẢN LÝ DỮ LIỆU
     const [assets, setAssets] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [loading, setLoading] = useState(true);
-
-    // CÁC STATE QUẢN LÝ MODAL & EDIT
     const [isFormOpen, setIsFormOpen] = useState(false);
-    
-    // ĐÂY RỒI! CHÍNH LÀ DÒNG BỊ THIẾU GÂY RA LỖI CỦA BẠN:
     const [editItem, setEditItem] = useState(null); 
-    
     const [deleteModal, setDeleteModal] = useState({ isOpen: false, item: null });
     const [alertConfig, setAlertConfig] = useState({ isOpen: false, title: '', message: '', type: 'info' });
 
-    // STATE PHÂN QUYỀN
     const currentUserId = getUserStorage('user_id'); 
     const currentUserRole = getUserStorage('user_role', 'User');
     const [isPrivileged, setIsPrivileged] = useState(false); 
@@ -34,7 +27,6 @@ const AssetItemView = () => {
     const showAlert = (title, message, type) => setAlertConfig({ isOpen: true, title, message, type });
     const closeAlert = () => setAlertConfig({ ...alertConfig, isOpen: false });
 
-    // HÀM LẤY DỮ LIỆU VÀ CHECK QUYỀN TRUY CẬP SÂU
     const fetchData = useCallback(async () => {
         try {
             const [catRes, assetsRes] = await Promise.all([
@@ -58,7 +50,6 @@ const AssetItemView = () => {
             setLoading(false);
             showAlert("Lỗi", "Không thể tải dữ liệu!", "error");
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [categoryId, currentUserId, currentUserRole]);
 
     useEffect(() => {
@@ -68,7 +59,7 @@ const AssetItemView = () => {
     const handleRefresh = () => {
         fetchData(); 
         setIsFormOpen(false);
-        setEditItem(null); // Reset lại state edit khi thành công
+        setEditItem(null);
         showAlert("Thành công", "Đã cập nhật dữ liệu!", "success");
     };
 
@@ -95,8 +86,6 @@ const AssetItemView = () => {
 
     return (
         <main className="flex flex-col flex-1 bg-slate-50 relative h-full">
-            
-            {/* Header chung đồng bộ 100% với Admin */}
             <UserHeader 
                 searchPlaceholder="Tìm kiếm tài sản..."
                 searchTerm={searchTerm}

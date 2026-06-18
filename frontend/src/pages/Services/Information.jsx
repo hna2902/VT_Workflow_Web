@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import defaultAvatar from '../../assets/default-avatar.png';
+import defaultAvatar from '../../assets/default-avatar.jpg';
 import ChangePasswordForm from './ChangePasswordForm';
 import Modal from '../../components/common/Modal';
 import axiosClient from '../../utils/axiosClients';
@@ -60,13 +60,9 @@ const Information = () => {
             showAlert("Thất bại", "Vui lòng chọn ảnh nhỏ hơn 2MB", "error");
             return;
         }
-
-        // Lưu ảnh cũ để phòng hờ lỗi, và tạo ảnh tạm để hiển thị liền
         const previousAvatar = avatar;
         const tempUrl = URL.createObjectURL(file);
         setAvatar(tempUrl); 
-        
-        // Gói file vào FormData
         const formData = new FormData();
         formData.append('avatar', file);
         
@@ -77,7 +73,6 @@ const Information = () => {
                 }
             });
             
-            // SỬA CHỖ NÀY: Khai báo serverAvatarUrl lấy từ response của Backend
             const avatarPath = response.data.avatar;
             const serverAvatarUrl = avatarPath.startsWith('http') ? avatarPath : `http://localhost:8000${avatarPath}`;
             
@@ -88,11 +83,10 @@ const Information = () => {
 
         } catch (error) {
             console.error("Lỗi Upload Avatar:", error);
-            // Trả về ảnh cũ nếu gọi API thất bại
             setAvatar(previousAvatar);
             showAlert("Upload thất bại", "Không thể upload ảnh đại diện. Vui lòng thử lại", "error");
         } finally {
-            event.target.value = null; // Reset input file
+            event.target.value = null;
         }
     };
 
@@ -132,9 +126,8 @@ const Information = () => {
     const handleUpdateEmailInline = async () => {
         if (!tempEmail.trim()) return;
         try {
-            const response = await axiosClient.patch('users/change-password/', {
-                currentPassword: passwords.currentPassword,
-                newPassword: passwords.newPassword
+            const response = await axiosClient.patch('users/update-email/', {
+                email: tempEmail
             });
             setEmail(response.data.email);
             setUserStorage('user_email', response.data.email);
@@ -175,16 +168,11 @@ const Information = () => {
     };
 
     useEffect(() => {
-    // REASON: Admins already have the highest priority badge, so skip checking.
     if (role === 'Admin' || !userId) return;
 
     const checkLeaderStatus = async () => {
         try {
             const response = await axiosClient.get('processes/categories/');
-            
-            // REFACTOR: Our system uses UUIDs (strings) for User IDs. 
-            // Using Number() previously caused it to return NaN. 
-            // We force both values to String to ensure accurate UUID matching.
             const amILeader = response.data.some(
                 cat => String(cat.leader) === String(userId)
             );

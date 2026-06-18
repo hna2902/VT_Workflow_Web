@@ -4,7 +4,6 @@ import {
     FaChevronDown
 } from 'react-icons/fa';
 const CategoryForm = ({ onSuccess, onClose, showAlert }) => {
-    // 1. FORM STATE
     const [formData, setFormData] = useState({
         title: '',
         leader: '', 
@@ -44,7 +43,6 @@ const CategoryForm = ({ onSuccess, onClose, showAlert }) => {
         setOpenDropdown(null);
     };
 
-    // 3. SUBMIT LOGIC
     const handleSubmit = async (e) => {
         e.preventDefault();
 
@@ -85,7 +83,6 @@ const CategoryForm = ({ onSuccess, onClose, showAlert }) => {
                 />
             </div>
 
-            {/* CUSTOM DROPDOWN: LEADER */}
             <div className="relative">
                 <label className="block text-sm font-semibold text-slate-700 mb-1.5">Người quản lý (Leader)</label>
                 
@@ -102,7 +99,6 @@ const CategoryForm = ({ onSuccess, onClose, showAlert }) => {
                 </div>
 
                 {openDropdown === 'leader' && (
-                    /* REASON: max-h-48 on mobile prevents it from overflowing the screen height. sm:max-h-60 restores size on desktop. */
                     <div className="absolute z-[60] w-full mt-2 bg-white border border-slate-200 rounded-xl shadow-xl max-h-48 sm:max-h-60 overflow-y-auto overflow-hidden animate-in fade-in slide-in-from-top-2">
                         <ul className="py-2">
                             <li 
@@ -125,7 +121,6 @@ const CategoryForm = ({ onSuccess, onClose, showAlert }) => {
                 )}
             </div>
 
-            {/* CUSTOM DROPDOWN: STATUS */}
             <div className="relative">
                 <label className="block text-sm font-semibold text-slate-700 mb-1.5">Trạng thái</label>
                 
@@ -156,7 +151,6 @@ const CategoryForm = ({ onSuccess, onClose, showAlert }) => {
                 )}
             </div>
             
-            {/* REASON: flex-col-reverse on mobile for natural thumb reach (Primary button at the bottom), flex-row on desktop. */}
             <div className="flex flex-col-reverse sm:flex-row gap-3 pt-5 mt-2 border-t border-slate-200">
                 <button type="button" onClick={onClose} className="w-full sm:flex-1 px-4 py-3 sm:py-2.5 border-2 border-slate-300 text-slate-600 font-bold rounded-xl hover:bg-slate-200 hover:text-slate-800 hover:border-slate-500 transition-all cursor-pointer">
                     Hủy

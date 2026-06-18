@@ -55,10 +55,7 @@ const ProcessForm = ({ onSuccess, onClose, showAlert, workflowId }) => {
     };
 
     return (
-        // REASON: Used flex-col and max-h to control the form height dynamically on small screens.
         <form onSubmit={handleSubmit} className="flex flex-col max-h-[calc(100vh-10rem)]">
-            
-            {/* VÙNG SCROLLABLE: Nội dung form tự động cuộn nếu quá dài */}
             <div className="flex-1 overflow-y-auto space-y-4 pr-1 pb-2">
                 <div className="flex gap-4">
                     <div className="w-24 shrink-0">
@@ -94,7 +91,6 @@ const ProcessForm = ({ onSuccess, onClose, showAlert, workflowId }) => {
                         required
                         value={content} 
                         onChange={(e) => setContent(e.target.value)}
-                        // REASON: Reduced textarea height from h-24 to h-20 to save vertical space.
                         className="w-full px-4 py-2 text-base sm:text-sm border border-slate-300 rounded-xl outline-none focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 bg-white text-slate-800 font-medium shadow-sm transition-all resize-none h-20"
                         placeholder="Mô tả chi tiết cách thực hiện bước này..."
                     />
@@ -102,8 +98,6 @@ const ProcessForm = ({ onSuccess, onClose, showAlert, workflowId }) => {
 
                 <div>
                     <label className="block text-sm font-semibold text-slate-700 mb-1.5">File đính kèm (Ảnh, Video, Tài liệu...) <span className="text-red-500">*</span></label>
-                    
-                    {/* REASON: Compressed the drag-and-drop area. Reduced padding (py-10 -> py-5) and icon size. */}
                     <div 
                         onClick={() => fileInputRef.current.click()}
                         className="border-2 border-dashed border-slate-300 rounded-xl px-4 py-5 text-center cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition-colors bg-white shadow-sm flex flex-col items-center"
@@ -160,7 +154,6 @@ const ProcessForm = ({ onSuccess, onClose, showAlert, workflowId }) => {
                 </div>
             </div>
             
-            {/* VÙNG STICKY: Nút bấm được ghim cố định ở đáy */}
             <div className="shrink-0 flex flex-col-reverse sm:flex-row gap-3 pt-4 mt-2 border-t border-slate-200 bg-white">
                 <button 
                     type="button" 

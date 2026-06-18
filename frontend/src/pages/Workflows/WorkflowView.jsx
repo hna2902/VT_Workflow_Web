@@ -82,32 +82,35 @@ const WorkflowView = () => {
 
     const handleSaveEdit = async (id, updatedData) => {
         try {
-            let payload = updatedData;
-            let config = {};
-
-            // If there's a file, we must use FormData
-            if (updatedData.video_file) {
-                payload = new FormData();
-                payload.append('name', updatedData.name);
-                payload.append('description', updatedData.description);
-                payload.append('video_file', updatedData.video_file);
-                // Important: Need to pass the item ID as well since WorkflowSerializer requires it,
-                // but the backend might allow partial update with PATCH instead of PUT if we omit it.
-                // We'll use PATCH to only update the provided fields safely.
-                config = { headers: { 'Content-Type': 'multipart/form-data' } };
-                
-                // Using patch so we don't have to provide all required fields like `item`
-                const res = await axiosClient.patch(`processes/workflows/${id}/`, payload, config);
-                setWorkflows(workflows.map(w => w.id === id ? { ...w, ...res.data } : w));
-            } else {
-                // If no file, normal PUT/PATCH (we will use PATCH to be safe)
-                const res = await axiosClient.patch(`processes/workflows/${id}/`, {
-                    name: updatedData.name,
-                    description: updatedData.description
-                });
-                setWorkflows(workflows.map(w => w.id === id ? { ...w, ...res.data } : w));
+            // 1. Delete old files if requested
+            if (updatedData.deleted_file_ids && updatedData.deleted_file_ids.length > 0) {
+                await Promise.all(updatedData.deleted_file_ids.map(fileId => 
+                    axiosClient.delete(`processes/workflow-files/${fileId}/`)
+                ));
             }
 
+            // 2. Upload new data (and new files)
+            const payload = new FormData();
+            payload.append('name', updatedData.name);
+            if (updatedData.description !== undefined && updatedData.description !== null) {
+                payload.append('description', updatedData.description);
+            }
+
+            if (updatedData.image_files && updatedData.image_files.length > 0) {
+                updatedData.image_files.forEach(f => payload.append('images[]', f));
+            }
+            if (updatedData.video_files && updatedData.video_files.length > 0) {
+                updatedData.video_files.forEach(f => payload.append('videos[]', f));
+            }
+            if (updatedData.document_files && updatedData.document_files.length > 0) {
+                updatedData.document_files.forEach(f => payload.append('documents[]', f));
+            }
+
+            const config = { headers: { 'Content-Type': 'multipart/form-data' } };
+            const res = await axiosClient.patch(`processes/workflows/${id}/`, payload, config);
+            
+            // Reload workflow data directly from backend response
+            setWorkflows(workflows.map(w => w.id === id ? { ...w, ...res.data } : w));
             showAlert("Thành công", "Đã cập nhật quy trình!", "success");
         } catch (error) {
             const errorMsg = error.response?.data?.name?.[0] || error.response?.data?.title?.[0] || "Có lỗi xảy ra khi lưu!";

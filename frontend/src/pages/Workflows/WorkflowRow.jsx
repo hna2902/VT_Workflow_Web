@@ -8,18 +8,25 @@ const WorkflowRow = ({ workflow, onSave, onDelete, isPrivileged }) => {
     // REASON: Syncing local state with both 'name' and 'description' from the model
     const [localName, setLocalName] = useState(workflow.name);
     const [localDescription, setLocalDescription] = useState(workflow.description || '');
-    const [localVideoFile, setLocalVideoFile] = useState(null);
-    const [localImageFile, setLocalImageFile] = useState(null);
-    const [localDocumentFile, setLocalDocumentFile] = useState(null);
+    const [localVideoFiles, setLocalVideoFiles] = useState([]);
+    const [localImageFiles, setLocalImageFiles] = useState([]);
+    const [localDocumentFiles, setLocalDocumentFiles] = useState([]);
+
+    const [deletedFileIds, setDeletedFileIds] = useState([]);
+
+    const oldImages = workflow.files?.filter(f => f.file_type === 'image') || [];
+    const oldVideos = workflow.files?.filter(f => f.file_type === 'video') || [];
+    const oldDocuments = workflow.files?.filter(f => f.file_type === 'document') || [];
 
     // REASON: Reset local state back to original values if user cancels editing
     const handleCancelClick = () => {
         setIsEditing(false);
         setLocalName(workflow.name);
         setLocalDescription(workflow.description || '');
-        setLocalVideoFile(null);
-        setLocalImageFile(null);
-        setLocalDocumentFile(null);
+        setLocalVideoFiles([]);
+        setLocalImageFiles([]);
+        setLocalDocumentFiles([]);
+        setDeletedFileIds([]);
     };
 
     const handleSaveClick = () => {
@@ -27,11 +34,20 @@ const WorkflowRow = ({ workflow, onSave, onDelete, isPrivileged }) => {
         onSave(workflow.id, { 
             name: localName, 
             description: localDescription,
-            video_file: localVideoFile,
-            image_file: localImageFile,
-            document_file: localDocumentFile
+            video_files: localVideoFiles,
+            image_files: localImageFiles,
+            document_files: localDocumentFiles,
+            deleted_file_ids: deletedFileIds
         });
         setIsEditing(false);
+    };
+
+    const toggleDeleteOldFile = (fileId) => {
+        if (deletedFileIds.includes(fileId)) {
+            setDeletedFileIds(deletedFileIds.filter(id => id !== fileId));
+        } else {
+            setDeletedFileIds([...deletedFileIds, fileId]);
+        }
     };
 
     return (
@@ -72,33 +88,69 @@ const WorkflowRow = ({ workflow, onSave, onDelete, isPrivileged }) => {
                             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                                 {/* Image */}
                                 <div className="flex flex-col border border-slate-200 rounded-xl p-3 bg-slate-50">
-                                    <span className="text-xs font-bold text-slate-600 mb-1">Ảnh bìa</span>
+                                    <span className="text-xs font-bold text-slate-600 mb-2">Ảnh bìa / Hình ảnh</span>
+                                    <div className="flex flex-col gap-2 mb-2">
+                                        {oldImages.map(f => (
+                                            <div key={f.id} className={`flex items-center justify-between px-2 py-1.5 rounded-lg border ${deletedFileIds.includes(f.id) ? 'bg-red-50 border-red-200' : 'bg-indigo-50 border-indigo-100'}`}>
+                                                <a href={f.file} target="_blank" rel="noreferrer" className={`text-xs truncate max-w-[80px] hover:underline ${deletedFileIds.includes(f.id) ? 'text-red-400 line-through' : 'text-indigo-700'}`} title={f.file}>Xem ảnh</a>
+                                                <button type="button" onClick={() => toggleDeleteOldFile(f.id)} className={`text-xs font-bold shrink-0 ml-2 ${deletedFileIds.includes(f.id) ? 'text-slate-500 hover:text-slate-700' : 'text-red-500 hover:text-red-700'}`}>
+                                                    {deletedFileIds.includes(f.id) ? 'Hoàn tác' : 'Xóa'}
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
                                     <input 
                                         type="file" 
-                                        onChange={(e) => setLocalImageFile(e.target.files[0])}
+                                        multiple
+                                        onChange={(e) => setLocalImageFiles(Array.from(e.target.files))}
                                         className="w-full text-xs text-slate-500 file:mr-2 file:py-1.5 file:px-2 file:rounded-lg file:border-0 file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer"
                                         accept="image/*"
                                     />
+                                    {localImageFiles.length > 0 && <span className="text-[10px] text-green-600 font-medium mt-1">Sẽ thêm {localImageFiles.length} ảnh</span>}
                                 </div>
                                 {/* Video */}
                                 <div className="flex flex-col border border-slate-200 rounded-xl p-3 bg-slate-50">
-                                    <span className="text-xs font-bold text-slate-600 mb-1">Video</span>
+                                    <span className="text-xs font-bold text-slate-600 mb-2">Video</span>
+                                    <div className="flex flex-col gap-2 mb-2">
+                                        {oldVideos.map(f => (
+                                            <div key={f.id} className={`flex items-center justify-between px-2 py-1.5 rounded-lg border ${deletedFileIds.includes(f.id) ? 'bg-red-50 border-red-200' : 'bg-indigo-50 border-indigo-100'}`}>
+                                                <a href={f.file} target="_blank" rel="noreferrer" className={`text-xs truncate max-w-[80px] hover:underline ${deletedFileIds.includes(f.id) ? 'text-red-400 line-through' : 'text-indigo-700'}`} title={f.file}>Xem video</a>
+                                                <button type="button" onClick={() => toggleDeleteOldFile(f.id)} className={`text-xs font-bold shrink-0 ml-2 ${deletedFileIds.includes(f.id) ? 'text-slate-500 hover:text-slate-700' : 'text-red-500 hover:text-red-700'}`}>
+                                                    {deletedFileIds.includes(f.id) ? 'Hoàn tác' : 'Xóa'}
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
                                     <input 
                                         type="file" 
-                                        onChange={(e) => setLocalVideoFile(e.target.files[0])}
+                                        multiple
+                                        onChange={(e) => setLocalVideoFiles(Array.from(e.target.files))}
                                         className="w-full text-xs text-slate-500 file:mr-2 file:py-1.5 file:px-2 file:rounded-lg file:border-0 file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer"
                                         accept="video/*"
                                     />
+                                    {localVideoFiles.length > 0 && <span className="text-[10px] text-green-600 font-medium mt-1">Sẽ thêm {localVideoFiles.length} video</span>}
                                 </div>
                                 {/* Document */}
                                 <div className="flex flex-col border border-slate-200 rounded-xl p-3 bg-slate-50">
-                                    <span className="text-xs font-bold text-slate-600 mb-1">Tài liệu</span>
+                                    <span className="text-xs font-bold text-slate-600 mb-2">Tài liệu</span>
+                                    <div className="flex flex-col gap-2 mb-2">
+                                        {oldDocuments.map(f => (
+                                            <div key={f.id} className={`flex items-center justify-between px-2 py-1.5 rounded-lg border ${deletedFileIds.includes(f.id) ? 'bg-red-50 border-red-200' : 'bg-indigo-50 border-indigo-100'}`}>
+                                                <a href={f.file} target="_blank" rel="noreferrer" className={`text-xs truncate max-w-[80px] hover:underline ${deletedFileIds.includes(f.id) ? 'text-red-400 line-through' : 'text-indigo-700'}`} title={f.file}>Xem TL</a>
+                                                <button type="button" onClick={() => toggleDeleteOldFile(f.id)} className={`text-xs font-bold shrink-0 ml-2 ${deletedFileIds.includes(f.id) ? 'text-slate-500 hover:text-slate-700' : 'text-red-500 hover:text-red-700'}`}>
+                                                    {deletedFileIds.includes(f.id) ? 'Hoàn tác' : 'Xóa'}
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
                                     <input 
                                         type="file" 
-                                        onChange={(e) => setLocalDocumentFile(e.target.files[0])}
+                                        multiple
+                                        onChange={(e) => setLocalDocumentFiles(Array.from(e.target.files))}
                                         className="w-full text-xs text-slate-500 file:mr-2 file:py-1.5 file:px-2 file:rounded-lg file:border-0 file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer"
                                         accept=".pdf,.doc,.docx,.xls,.xlsx,.txt"
                                     />
+                                    {localDocumentFiles.length > 0 && <span className="text-[10px] text-green-600 font-medium mt-1">Sẽ thêm {localDocumentFiles.length} tài liệu</span>}
                                 </div>
                             </div>
                         </div>
@@ -118,6 +170,27 @@ const WorkflowRow = ({ workflow, onSave, onDelete, isPrivileged }) => {
                             <p className="text-sm text-slate-500 mt-2 line-clamp-2">{workflow.description}</p>
                         ) : (
                             <p className="text-xs text-slate-400 italic mt-2">No description provided.</p>
+                        )}
+                        
+                        {/* Files display in view mode */}
+                        {(oldImages.length > 0 || oldVideos.length > 0 || oldDocuments.length > 0) && (
+                            <div className="flex flex-wrap gap-2 mt-3 pt-3 border-t border-slate-100">
+                                {oldImages.length > 0 && (
+                                    <span className="px-2 py-1 bg-slate-100 text-slate-600 text-xs font-medium rounded-md">
+                                        🖼️ {oldImages.length} Ảnh đính kèm
+                                    </span>
+                                )}
+                                {oldVideos.length > 0 && (
+                                    <span className="px-2 py-1 bg-slate-100 text-slate-600 text-xs font-medium rounded-md">
+                                        🎬 {oldVideos.length} Video đính kèm
+                                    </span>
+                                )}
+                                {oldDocuments.length > 0 && (
+                                    <span className="px-2 py-1 bg-slate-100 text-slate-600 text-xs font-medium rounded-md">
+                                        📄 {oldDocuments.length} Tài liệu đính kèm
+                                    </span>
+                                )}
+                            </div>
                         )}
                     </div>
                 )}
