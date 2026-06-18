@@ -24,6 +24,11 @@ environ.Env.read_env(ENV_PATH)
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Allow up to 10GB file uploads
+DATA_UPLOAD_MAX_MEMORY_SIZE = 10485760000
+FILE_UPLOAD_MAX_MEMORY_SIZE = 10485760000
 SECRET_KEY = 'django-insecure-92cx%oqqf0d+nnoy8s-tu59(j^l6%p7yy98wrd$!%i%(@9sis&'
 
 # SECURITY WARNING: don't run with debug turned on in production!

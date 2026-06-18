@@ -1,14 +1,14 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import homeBgImage from '../../../assets/home_background.jpg';
+import { getUserStorage } from '../../../utils/storage';
 import { 
     FaUsers, 
     FaFolderOpen 
 } from 'react-icons/fa';
 
 const AdminHome = () => {
-    const name = localStorage.getItem('user_name') || sessionStorage.getItem('user_name') || 'Admin';
-
+    const name = getUserStorage('user_name', 'Admin');
     return (
         <div className="relative w-full h-full min-h-[calc(100vh-64px)] flex items-center justify-center overflow-hidden bg-slate-900">
             
@@ -31,14 +31,14 @@ const AdminHome = () => {
                     </h2>
                     
                     <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
-                        <Link to="/users/manage" className="flex-1 w-full p-6 flex flex-col items-center justify-center gap-4 bg-blue-50/70 rounded-2xl border border-blue-100 hover:bg-blue-100 hover:shadow-md transition-all group">
+                        <Link to="/admin/users/manage" className="flex-1 w-full p-6 flex flex-col items-center justify-center gap-4 bg-blue-50/70 rounded-2xl border border-blue-100 hover:bg-blue-100 hover:shadow-md transition-all group">
                             <div className="p-4 bg-blue-600 text-white rounded-full group-hover:scale-110 transition-transform">
                                 <FaUsers className="text-2xl" />
                             </div>
                             <span className="font-bold text-blue-900">Quản lý người dùng</span>
                         </Link>
 
-                        <Link to="/categories/manage" className="flex-1 w-full p-6 flex flex-col items-center justify-center gap-4 bg-amber-50/70 rounded-2xl border border-amber-100 hover:bg-amber-100 hover:shadow-md transition-all group">
+                        <Link to="/admin/categories/manage" className="flex-1 w-full p-6 flex flex-col items-center justify-center gap-4 bg-amber-50/70 rounded-2xl border border-amber-100 hover:bg-amber-100 hover:shadow-md transition-all group">
                             <div className="p-4 bg-amber-500 text-white rounded-full group-hover:scale-110 transition-transform">
                                 <FaFolderOpen className="text-2xl" />
                             </div>

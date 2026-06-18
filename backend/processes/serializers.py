@@ -16,7 +16,8 @@ class AssetItemSerializer(serializers.ModelSerializer):
         model = AssetItem
         fields = '__all__'
         read_only_fields = ['create_at']
-    def validate(self, value):
+    # string value of the 'title' field into this method. Now, `value.strip()` will work perfectly.
+    def validate_title(self, value):
         if not value.strip():
             raise serializers.ValidationError("Asset title cannot be empty")
         return value
@@ -34,12 +35,12 @@ class WorkflowSerializer(serializers.ModelSerializer):
 class ProcessImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProcessImage
-        field = '__all__'
+        fields = '__all__'
         read_only_fields = ['create_at']
 
 class ProcessSerializer(serializers.ModelSerializer):
     workflow_title = serializers.CharField(source='workflow.title', read_only=True)
-    images = ProcessImageSerializer(source='processimage_set', many=True, read_only=True)
+    images = ProcessImageSerializer(source='processImg', many=True, read_only=True)
     class Meta:
         model = Process
         fields = '__all__'

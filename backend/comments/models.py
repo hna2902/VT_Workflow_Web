@@ -16,8 +16,17 @@ class Comment(models.Model):
 # Using to store picture for comments
 class CommentImage(models.Model):
     comment = models.ForeignKey(Comment, on_delete=models.CASCADE, related_name='images')
-    img_url = models.ImageField(max_length=1000)
+    img_url = models.FileField(upload_to='comments/images/', max_length=1000)
     create_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return self.img_url
+        return self.img_url.name if self.img_url else "No File"
+
+from django.db.models.signals import post_delete
+from django.dispatch import receiver
+
+@receiver(post_delete, sender=CommentImage)
+def delete_comment_file(sender, instance, **kwargs):
+    """Delete file from filesystem when CommentImage object is deleted."""
+    if instance.img_url:
+        instance.img_url.delete(save=False)

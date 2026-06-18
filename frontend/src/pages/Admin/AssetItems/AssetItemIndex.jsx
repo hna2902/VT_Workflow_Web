@@ -1,46 +1,131 @@
-import React from 'react';
+import React, { useState, useEffect, useCallback} from 'react';
+import { useParams } from 'react-router-dom'; // Dùng để lấy ID từ URL
+import axiosClient from '../../../utils/axiosClients';
+import Modal from '../../../components/common/Modal';
+import AdminIndexLayout from '../../../components/layout/AdminIndexLayout';
+import AssetItemForm from './AssetItemForm'; 
+import AssetItemDelete from './AssetItemDelete';
+import AssetItemRow from './AssetItemRow'; 
 
-const Category = ({ activeCategory }) => {
-  return (
-    // Main area with very light slate background
-    <main className="flex flex-col flex-1 bg-slate-50">
-      
-      {/* Toolbar with slate-200 background */}
-      <div className="flex items-center px-6 py-3 shadow-sm bg-slate-200 border-b border-slate-300 shrink-0">
-        <input 
-          type="text" 
-          placeholder="Tìm kiếm" 
-          // White input field to stand out against the slate toolbar
-          className="px-4 py-2 transition-all bg-white border rounded outline-none border-slate-300 w-72 focus:border-blue-500 focus:ring-2 focus:ring-blue-200" 
-        />
-        <button className="flex items-center justify-center w-10 h-10 ml-4 text-2xl text-white transition-colors bg-blue-600 rounded shadow-sm hover:bg-blue-700">
-          +
-        </button>
-      </div>
+const AssetItemIndex = () => {
+    const { categoryId } = useParams(); // URL sẽ có dạng /admin/assets/:categoryId
+    const [assets, setAssets] = useState([]);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [loading, setLoading] = useState(true);
+    
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 10;
+    
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [alertConfig, setAlertConfig] = useState({ isOpen: false, title: '', message: '', type: 'info' });
+    const [deleteModal, setDeleteModal] = useState({ isOpen: false, item: null });
 
-      {/* Asset cards grid */}
-      <div className="flex-1 p-6 overflow-y-auto">
-        <div className="flex gap-4">
-          
-          {/* Card item with white background and subtle shadow */}
-          <div className="relative w-48 overflow-hidden bg-white border rounded shadow border-slate-200 border-t-4 border-t-blue-500 group">
-            <button className="absolute flex items-center justify-center w-6 h-6 text-xs text-red-600 transition-opacity rounded opacity-0 top-2 right-2 bg-red-100 group-hover:opacity-100 hover:bg-red-500 hover:text-white">
-              ✕
-            </button>
+    const showAlert = (title, message, type) => setAlertConfig({ isOpen: true, title, message, type });
+    const closeAlert = () => setAlertConfig({ ...alertConfig, isOpen: false });
 
-            <div className="flex items-center justify-center h-24 bg-slate-100">
-              <span className="text-sm text-slate-400">Hình ảnh</span>
-            </div>
-            <div className="py-3 font-medium text-center border-t text-slate-700 border-slate-100">
-              {activeCategory} abc...
-            </div>
-          </div>
+    // Gọi API kèm tham số category
+    const fetchAssets = async () => {
+        try {
+            const response = await axiosClient.get(`processes/items/?category=${categoryId}`);
+            setAssets(response.data);
+            setLoading(false);
+        } catch (error) {
+            console.error("Failed to fetch assets:", error);
+            setLoading(false);
+            showAlert("Lỗi", "Không thể tải danh sách tài sản!", "error");
+        }
+    };
 
-        </div>
-      </div>
-      
-    </main>
-  );
+    useEffect(() => {
+        if (categoryId) {
+            fetchAssets();
+        }
+    }, [categoryId]);
+
+    const handleRefresh = () => {
+        fetchAssets(); 
+        setIsModalOpen(false);
+        showAlert("Thành công", "Đã thêm tài sản mới!", "success");
+    };
+
+    const handleSaveEdit = async (id, updatedData) => {
+        try {
+            await axiosClient.put(`processes/items/${id}/`, updatedData);
+            setAssets(assets.map(item => 
+                item.id === id ? { ...item, ...updatedData } : item
+            ));
+            showAlert("Thành công", "Đã cập nhật tài sản!", "success");
+        } catch (error) {
+            const errorMsg = error.response?.data?.title?.[0] || "Có lỗi xảy ra khi lưu!";
+            showAlert("Lỗi cập nhật", errorMsg, "error");
+        }
+    };
+
+    const confirmDelete = async () => {
+        await axiosClient.delete(`processes/items/${deleteModal.item.id}/`);
+        setAssets(assets.filter(a => a.id !== deleteModal.item.id));
+        setDeleteModal({ isOpen: false, item: null });
+        showAlert("Thành công", "Đã xóa tài sản!", "success");
+    };
+
+    const filteredAssets = assets.filter(item => 
+        item.title.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    const totalPages = Math.ceil(filteredAssets.length / itemsPerPage);
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    const currentItems = filteredAssets.slice(indexOfFirstItem, indexOfLastItem);
+
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchTerm]);
+
+    return (
+        <AdminIndexLayout
+            searchPlaceholder="Tìm kiếm tài sản..."
+            searchTerm={searchTerm}
+            onSearchChange={setSearchTerm}
+            onAddClick={() => setIsModalOpen(true)}
+            addButtonText="+ Thêm tài sản"
+            loading={loading}
+            items={currentItems}
+            renderItem={(item) => (
+                <AssetItemRow 
+                    key={item.id} 
+                    item={item} 
+                    onSave={handleSaveEdit} 
+                    onDelete={(itemToDelete) => setDeleteModal({ isOpen: true, item: itemToDelete })} 
+                />
+            )}
+            emptyMessage={
+                assets.length === 0 
+                    ? "Danh mục này hiện chưa có tài sản nào." 
+                    : `Không tìm thấy tài sản nào phù hợp với từ khóa: "${searchTerm}"`
+            }
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+        >
+            <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Thêm Tài Sản Mới">
+                {/* Truyền categoryId vào Form để khi tạo mới, Backend biết nó thuộc Category nào */}
+                <AssetItemForm onSuccess={handleRefresh} showAlert={showAlert} onClose={() => setIsModalOpen(false)} categoryId={categoryId} />
+            </Modal>
+
+            <Modal isOpen={alertConfig.isOpen} onClose={closeAlert} title={alertConfig.title}>
+                <div className="text-center pb-4">
+                    <p className={`text-lg font-medium ${alertConfig.type === 'error' ? 'text-red-600' : 'text-green-600'}`}>{alertConfig.message}</p>
+                    <button onClick={closeAlert} className="mt-6 px-6 py-2 bg-slate-800 text-white rounded-lg">Đóng</button>
+                </div>
+            </Modal>
+
+            <AssetItemDelete 
+                isOpen={deleteModal.isOpen}
+                item={deleteModal.item}
+                onClose={() => setDeleteModal({ ...deleteModal, isOpen: false })}
+                onConfirm={confirmDelete}
+            />
+        </AdminIndexLayout>
+    );
 };
 
-export default MainContent;
+export default AssetItemIndex;

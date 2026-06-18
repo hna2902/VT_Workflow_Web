@@ -4,11 +4,11 @@ from .views import AssetItemViewSet, CategoryViewSet, ProcessImageViewSet, Proce
 
 router = DefaultRouter()
 router.register(r'categories', CategoryViewSet, basename='category')
+router.register(r'items', AssetItemViewSet, basename='item')
 router.register(r'assets', AssetItemViewSet, basename='asset')
 router.register(r'workflows', WorkflowViewSet, basename='workflow')
-router.register(r'processes', ProcessViewSet, basename='process')
+router.register(r'process', ProcessViewSet, basename='process')
 router.register(r'process-images', ProcessImageViewSet, basename='process-image')
 urlpatterns = [
     path('', include(router.urls)),
-    
 ]

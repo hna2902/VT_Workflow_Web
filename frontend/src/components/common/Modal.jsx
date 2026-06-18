@@ -13,12 +13,13 @@ const Modal = ({ isOpen, onClose, title, children }) => {
       <div className="absolute inset-0 cursor-pointer" onClick={onClose}></div>
 
       {/* Modal box: Vẫn giữ lại animation mượt mà cho khối nội dung */}
-      <div className="relative w-full max-w-md p-6 bg-white rounded-2xl shadow-2xl animate-in zoom-in duration-200">
-        <div className="flex items-center justify-between mb-4">
+      <div className="relative w-full max-w-md p-6 bg-white rounded-2xl shadow-2xl animate-in zoom-in duration-200 max-h-[90vh] flex flex-col">
+        <div className="flex items-center justify-between mb-4 shrink-0">
           <h2 className="text-xl font-bold text-slate-800">{title}</h2>
         </div>
         
-        <div>{children}</div>
+        {/* Vùng chứa nội dung có thể scroll nếu vượt quá 90vh */}
+        <div className="overflow-y-auto pr-1 -mr-1 custom-scrollbar">{children}</div>
       </div>
     </div>,
     document.body // Ép Modal nằm ở cấp độ cao nhất của HTML

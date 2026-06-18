@@ -16,7 +16,11 @@ import {
 
 const Header = () => {
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const [isBellOpen, setIsBellOpen] = useState(false);
+    const [unreadNotifs, setUnreadNotifs] = useState([]);
+    const [showBadge, setShowBadge] = useState(false);
     const dropdownRef = useRef(null);
+    const bellRef = useRef(null);
     const navigate = useNavigate();
 
     const role = getUserStorage('user_role', 'User');
@@ -33,16 +37,61 @@ const Header = () => {
     
     const displayRole = role === 'Admin' ? 'Quản trị viên' : 'Người dùng';
 
-    // Handle outside click to close dropdown
+    // Handle outside click to close dropdowns
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
                 setIsDropdownOpen(false);
             }
+            if (bellRef.current && !bellRef.current.contains(event.target)) {
+                setIsBellOpen(false);
+            }
         };
         document.addEventListener('mousedown', handleClickOutside);
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
+
+    // Fetch unread notifications
+    useEffect(() => {
+        const fetchUnread = async () => {
+            try {
+                const res = await axiosClient.get('notifications/notifications/?is_read=false');
+                if (Array.isArray(res.data)) {
+                    setUnreadNotifs(res.data);
+                    if (res.data.length > 0) {
+                        setShowBadge(true);
+                    } else {
+                        setShowBadge(false);
+                    }
+                } else {
+                    setUnreadNotifs([]);
+                    setShowBadge(false);
+                }
+            } catch (error) {
+                console.error("Lỗi tải thông báo chưa đọc:", error);
+                setUnreadNotifs([]);
+                setShowBadge(false);
+            }
+        };
+        fetchUnread();
+        
+        // Optional: poll every 30s
+        const interval = setInterval(fetchUnread, 30000);
+        return () => clearInterval(interval);
+    }, []);
+
+    const handleBellClick = async () => {
+        setIsBellOpen(!isBellOpen);
+        if (!isBellOpen && showBadge) {
+            try {
+                await axiosClient.patch('notifications/notifications/mark_all_read/');
+                // Hide the badge immediately for better UX, but keep unreadNotifs so dropdown renders them
+                setShowBadge(false);
+            } catch (error) {
+                console.error("Lỗi đánh dấu đã đọc:", error);
+            }
+        }
+    };
 
     // Listen for avatar updates across the app
     useEffect(() => {
@@ -85,27 +134,64 @@ const Header = () => {
             {/* Logo */}
             <Link to="/home" className="flex items-center h-10 cursor-pointer group">
                 <img src={logo} alt="VT Logo" className="object-contain h-full mr-2 group-hover:scale-105 transition-transform" />
-                <span className="text-xl font-bold text-blue-800">
+                <span className="text-xl font-bold text-blue-800 hidden sm:inline">
                     <span className="text-red-600">VT</span> Workflow
                 </span>
             </Link>
             
             {/* Right Side */}
-            <div className="flex items-center gap-6">
+            <div className="flex items-center gap-2 sm:gap-6">
                 
                 {/* Notification Bell */}
-                <button className="relative flex items-center justify-center w-10 h-10 text-white rounded-full cursor-pointer hover:bg-white/20 transition-colors">
-                    <FaBell className="text-lg" />
-                    <span className="absolute top-1 right-1 w-2.5 h-2.5 border border-blue-700 rounded-full bg-red-500"></span>
-                </button>
+                <div className="relative" ref={bellRef}>
+                    <button 
+                        onClick={handleBellClick}
+                        className="relative flex items-center justify-center w-10 h-10 text-white rounded-full cursor-pointer hover:bg-white/20 transition-colors"
+                    >
+                        <FaBell className="text-lg" />
+                        {showBadge && (
+                            <span className="absolute top-1 right-1 w-2.5 h-2.5 border border-blue-700 rounded-full bg-red-500"></span>
+                        )}
+                    </button>
+                    
+                    {/* Bell Dropdown */}
+                    {isBellOpen && (
+                        <div className="absolute right-0 mt-4 w-[calc(100vw-2rem)] sm:w-80 max-w-sm bg-white rounded-xl shadow-xl border border-slate-200 overflow-hidden transform origin-top-right transition-all flex flex-col z-50">
+                            <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+                                <h3 className="font-bold text-slate-800">Thông báo mới</h3>
+                            </div>
+                            <div className="max-h-80 overflow-y-auto">
+                                {unreadNotifs.length === 0 ? (
+                                    <div className="p-6 text-center text-sm text-slate-500 italic">
+                                        Bạn không có thông báo mới nào.
+                                    </div>
+                                ) : (
+                                    unreadNotifs.map(notif => (
+                                        <div key={notif.id} className="p-4 border-b border-slate-50 hover:bg-slate-50 transition-colors">
+                                            <p className="text-sm font-medium text-slate-800">{notif.message}</p>
+                                            <p className="text-[10px] text-slate-400 mt-1">{new Date(notif.create_at).toLocaleString('vi-VN')}</p>
+                                        </div>
+                                    ))
+                                )}
+                            </div>
+                            <Link 
+                                to="/notifications" 
+                                onClick={() => setIsBellOpen(false)}
+                                className="px-5 py-3 text-center text-sm font-bold text-blue-600 hover:bg-blue-50 transition-colors border-t border-slate-100 block"
+                            >
+                                Xem tất cả thông báo
+                            </Link>
+                        </div>
+                    )}
+                </div>
                 
                 {/* User Dropdown */}
                 <div className="relative" ref={dropdownRef}>
                     <button 
                         onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                        className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity"
+                        className="flex items-center gap-2 sm:gap-3 cursor-pointer hover:opacity-80 transition-opacity"
                     >
-                        <span className="font-medium text-white select-none">{name}</span>
+                        <span className="font-medium text-white select-none hidden sm:inline">{name}</span>
                         <div className="flex items-center gap-1">
                             <img 
                                 src={userAvatar} 
