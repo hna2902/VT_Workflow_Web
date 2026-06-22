@@ -36,5 +36,36 @@ services:
     depends_on:
       - db
 
+  backend:
+    build: ./backend
+    container_name: workflow_backend
+    restart: always
+    environment:
+      - DB_NAME=${DB_NAME}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_HOST=db
+      - DB_PORT=5432
+      - REDIS_URL=redis://redis:6379/0
+      - FRONTEND_URL=http://<Local_IP>
+      - EMAIL_HOST_USER=${EMAIL_HOST_USER}
+      - EMAIL_HOST_PASSWORD=${EMAIL_HOST_PASSWORD}
+    depends_on:
+      - db
+      - redis
+    volumes:
+      - media_data:/app/media
+  frontend:
+    build: ./frontend
+    container_name: workflow_frontend
+    restart: always
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    volumes:
+      - media_data:/app/media
+
 volumes:
   postgres_data:
+  media_data:
