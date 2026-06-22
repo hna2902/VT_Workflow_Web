@@ -58,4 +58,3 @@ docker exec -it workflow_backend python manage.py createsuperuser
 **4. Access the Application**
 - **Web App:** `http://localhost:8080` (or your configured IP/domain)
 - **pgAdmin:** `http://localhost:5050`
-```
