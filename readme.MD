@@ -1,42 +1,61 @@
-# VT Workflow Web - Enterprise Workflow Management System
+# VT Workflow Web
 
 ## Project Overview
-This project builds a comprehensive Enterprise Workflow Management System. It provides a solution to digitize complex business operations into sequential processes, manage categorized assets, and deliver real-time notifications to optimize team performance and collaboration.
+This project is an Enterprise Workflow Management System designed to digitize business operations into sequential processes. It helps manage categorized assets and delivers real-time notifications to support team collaboration.
 
 ## System Architecture
-* **API Gateway & Logic:** Utilizes **Django REST Framework (DRF)** to implement a decoupled architecture, completely separating Backend and Frontend, handling data seamlessly via JSON.
-* **Database & Storage:** Highly normalized Relational Database (RDBMS) featuring 9 tables on **PostgreSQL**, utilizing UUIDs for secure primary keys.
-* **Real-time Engine:** Integrates **Redis** as a Message Broker to facilitate the WebSockets system, enabling instant live notifications.
-* **Infrastructure:** Containerized the entire environment using **Docker & Docker Compose**, ensuring consistent and seamless deployment across all servers (Local/Production).
+* **API & Logic:** Uses Django REST Framework (DRF) to provide a decoupled backend architecture, communicating with the frontend via JSON.
+* **Frontend:** Built with React and Vite for a single-page application experience.
+* **Database:** Uses PostgreSQL as a relational database, applying UUIDs for primary keys across the tables.
+* **Real-time Notifications:** Integrates Redis and Django Channels for WebSocket support, enabling live notifications.
+* **Deployment:** Containerized using Docker, Docker Compose, and Nginx to ensure consistent environments across local and production servers.
 
 ## Tech Stack
-* **Languages:** Python, SQL
-* **Backend Framework:** Django, Django REST Framework (DRF)
+* **Languages:** Python, JavaScript, HTML/CSS, SQL
+* **Frontend:** React, Vite
+* **Backend:** Django, Django REST Framework (DRF), Django Channels
 * **Database & Caching:** PostgreSQL, Redis
-* **DevOps & Tooling:** Docker, Docker Compose, pgAdmin, Python-environ
+* **Infrastructure:** Docker, Docker Compose, Nginx, pgAdmin
 
-## Key Achievements
-* Architected an enterprise-scale database schema comprising **9 tables across 4 decoupled apps**, completely eliminating Circular Import issues.
-* Engineered a comprehensive RESTful API suite (CRUD) optimized for Single-Page Applications (SPA) - enabling seamless data creation, inline editing, and deletion via Popup Modals without page reloads.
-* Successfully implemented enterprise-standard security flows: 100% concealment of Secret Keys and Database Credentials through strict `.env` environment variable management.
+## Key Features
+* **Database Schema:** Structured database schema across decoupled Django apps to manage users, processes, categories, and notifications.
+* **RESTful API:** Provides CRUD operations optimized for the frontend, allowing data manipulation without full page reloads.
+* **Docker Environment:** Uses Docker Compose to spin up the Database, Redis, Backend, and Frontend services simultaneously.
+* **Environment Configuration:** Manages credentials and sensitive information through `.env` files.
 
 ## Installation & Setup
-Prerequisites: Docker and Docker Compose must be installed on your local machine.
+**Prerequisites:** Docker and Docker Compose installed on your system.
 
 **1. Environment Variables Setup**
-Create a `.env` file in the root directory to secure credentials:
-- DB_NAME=vt_workflow
-- DB_USER=admin
-- DB_PASSWORD=your_secure_password
-- PGADMIN_EMAIL=admin@workflow.com
-- PGADMIN_PASSWORD=your_pgadmin_password
+Create a `.env` file in the root directory and configure the following variables:
+```env
+DB_NAME=vt_workflow
+DB_USER=admin
+DB_PASSWORD=your_secure_password
 
-**2. Spin up the Infrastructure**
-Launch the PostgreSQL database, Redis, and pgAdmin in detached mode:
-- docker-compose up -d
+PGADMIN_EMAIL=admin@workflow.com
+PGADMIN_PASSWORD=your_pgadmin_password
 
-**3. Initialize Data and Backend Server**
-Apply migrations, setup the admin account, and start the development server:
-- python manage.py migrate
-- python manage.py createsuperuser
-- python manage.py runserver
+EMAIL_HOST_USER=your_gmail@gmail.com
+EMAIL_HOST_PASSWORD=your_app_password
+
+FRONTEND_URL=http://localhost:8080
+```
+
+**2. Build and Start the Containers**
+Run the following command to build the images and start the services in the background:
+```bash
+docker compose up -d --build
+```
+
+**3. Database Initialization**
+Run migrations and create an admin user inside the backend container:
+```bash
+docker exec -it workflow_backend python manage.py migrate
+docker exec -it workflow_backend python manage.py createsuperuser
+```
+
+**4. Access the Application**
+- **Web App:** `http://localhost:8080` (or your configured IP/domain)
+- **pgAdmin:** `http://localhost:5050`
+```
