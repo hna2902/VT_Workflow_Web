@@ -4,7 +4,7 @@ import Modal from '../../../components/common/Modal';
 import AdminIndexLayout from '../../../components/layout/AdminIndexLayout';
 import CategoryForm from './CategoryForm';
 import CategoryDelete from './CategoryDelete';
-import CategoryRow from './CategoryRow'; // Nhớ import component mới vào
+import CategoryRow from './CategoryRow';
 
 const CategoryIndex = () => {
     const [categories, setCategories] = useState([]);
@@ -14,7 +14,7 @@ const CategoryIndex = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 10;
     
-    // UI States
+    // UI states
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [alertConfig, setAlertConfig] = useState({ isOpen: false, title: '', message: '', type: 'info' });
     const [deleteModal, setDeleteModal] = useState({ isOpen: false, category: null });

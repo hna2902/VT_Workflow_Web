@@ -5,7 +5,7 @@ const WorkflowRow = ({ workflow, onSave, onDelete, isPrivileged }) => {
     const navigate = useNavigate();
     const [isEditing, setIsEditing] = useState(false);
     
-    // REASON: Syncing local state with both 'name' and 'description' from the model
+    // State sync
     const [localName, setLocalName] = useState(workflow.name);
     const [localDescription, setLocalDescription] = useState(workflow.description || '');
     const [localVideoFiles, setLocalVideoFiles] = useState([]);
@@ -18,7 +18,7 @@ const WorkflowRow = ({ workflow, onSave, onDelete, isPrivileged }) => {
     const oldVideos = workflow.files?.filter(f => f.file_type === 'video') || [];
     const oldDocuments = workflow.files?.filter(f => f.file_type === 'document') || [];
 
-    // REASON: Reset local state back to original values if user cancels editing
+    // Reset state
     const handleCancelClick = () => {
         setIsEditing(false);
         setLocalName(workflow.name);
@@ -30,7 +30,7 @@ const WorkflowRow = ({ workflow, onSave, onDelete, isPrivileged }) => {
     };
 
     const handleSaveClick = () => {
-        // REASON: Send the updated name and description back to the parent (WorkflowView)
+        // Submit to parent
         onSave(workflow.id, { 
             name: localName, 
             description: localDescription,
@@ -55,9 +55,8 @@ const WorkflowRow = ({ workflow, onSave, onDelete, isPrivileged }) => {
             
             <div className="flex-1 w-full">
                 {isEditing ? (
-                    // ================= EDIT MODE =================
+                    // Edit mode
                     <div className="flex flex-col gap-3 w-full sm:max-w-xl animate-in fade-in slide-in-from-top-1">
-                        {/* Name Input */}
                         <div>
                             <label className="block text-[10px] font-bold text-indigo-400 uppercase tracking-widest mb-1 ml-1">Workflow Name</label>
                             <input 
@@ -70,7 +69,6 @@ const WorkflowRow = ({ workflow, onSave, onDelete, isPrivileged }) => {
                             />
                         </div>
 
-                        {/* Description Textarea */}
                         <div>
                             <label className="block text-[10px] font-bold text-indigo-400 uppercase tracking-widest mb-1 ml-1">Description</label>
                             <textarea 
@@ -81,12 +79,10 @@ const WorkflowRow = ({ workflow, onSave, onDelete, isPrivileged }) => {
                             />
                         </div>
 
-                        {/* File Inputs (Only visible during edit) */}
                         <div className="space-y-3 mt-2">
                             <label className="block text-[10px] font-bold text-indigo-400 uppercase tracking-widest ml-1">Update Files (Optional)</label>
                             
                             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                                {/* Image */}
                                 <div className="flex flex-col border border-slate-200 rounded-xl p-3 bg-slate-50">
                                     <span className="text-xs font-bold text-slate-600 mb-2">Ảnh bìa / Hình ảnh</span>
                                     <div className="flex flex-col gap-2 mb-2">
@@ -108,7 +104,6 @@ const WorkflowRow = ({ workflow, onSave, onDelete, isPrivileged }) => {
                                     />
                                     {localImageFiles.length > 0 && <span className="text-[10px] text-green-600 font-medium mt-1">Sẽ thêm {localImageFiles.length} ảnh</span>}
                                 </div>
-                                {/* Video */}
                                 <div className="flex flex-col border border-slate-200 rounded-xl p-3 bg-slate-50">
                                     <span className="text-xs font-bold text-slate-600 mb-2">Video</span>
                                     <div className="flex flex-col gap-2 mb-2">
@@ -130,7 +125,6 @@ const WorkflowRow = ({ workflow, onSave, onDelete, isPrivileged }) => {
                                     />
                                     {localVideoFiles.length > 0 && <span className="text-[10px] text-green-600 font-medium mt-1">Sẽ thêm {localVideoFiles.length} video</span>}
                                 </div>
-                                {/* Document */}
                                 <div className="flex flex-col border border-slate-200 rounded-xl p-3 bg-slate-50">
                                     <span className="text-xs font-bold text-slate-600 mb-2">Tài liệu</span>
                                     <div className="flex flex-col gap-2 mb-2">
@@ -156,7 +150,7 @@ const WorkflowRow = ({ workflow, onSave, onDelete, isPrivileged }) => {
                         </div>
                     </div>
                 ) : (
-                    // ================= VIEW MODE =================
+                    // View mode
                     <div className="py-1">
                         <h3 
                             onClick={() => navigate(`/workflows/${workflow.id}/processes`)} 
@@ -165,14 +159,14 @@ const WorkflowRow = ({ workflow, onSave, onDelete, isPrivileged }) => {
                             {workflow.name}
                         </h3>
                         
-                        {/* REASON: Render description only if it's not empty */}
+                        {/* Render description */}
                         {workflow.description ? (
                             <p className="text-sm text-slate-500 mt-2 line-clamp-2">{workflow.description}</p>
                         ) : (
                             <p className="text-xs text-slate-400 italic mt-2">No description provided.</p>
                         )}
                         
-                        {/* Files display in view mode */}
+                        {/* Display files */}
                         {(oldImages.length > 0 || oldVideos.length > 0 || oldDocuments.length > 0) && (
                             <div className="flex flex-wrap gap-2 mt-3 pt-3 border-t border-slate-100">
                                 {oldImages.length > 0 && (
@@ -196,7 +190,7 @@ const WorkflowRow = ({ workflow, onSave, onDelete, isPrivileged }) => {
                 )}
             </div>
             
-            {/* ACTION BUTTONS */}
+            {/* Action buttons */}
             {isPrivileged && (
                 <div className="flex flex-row sm:flex-col gap-2 shrink-0 w-full sm:w-24 mt-2 sm:mt-0">
                     {isEditing ? (

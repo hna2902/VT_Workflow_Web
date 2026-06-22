@@ -8,7 +8,7 @@ const UserHeader = ({
     onAddClick, 
     addButtonText = "+ Thêm mới",
     
-    // CÁC PROP MỚI: Để hiển thị thông tin bối cảnh bên trái
+    // Display context info
     showContext = false,
     onBackClick,
     contextImage,
@@ -17,9 +17,9 @@ const UserHeader = ({
     contextLabel
 }) => {
     return (
-        <header className="flex flex-col xl:flex-row xl:items-center px-4 sm:px-6 py-3 bg-white border-b border-slate-300 shrink-0 shadow-sm gap-3 z-10 relative">
+        <header className="flex flex-col xl:flex-row xl:items-center px-4 sm:px-6 py-4 bg-white border-b border-slate-300 shrink-0 shadow-sm gap-3 z-10 relative">
             
-            {/* KHU VỰC TRÁI: Context (Back + Ảnh + Tên) */}
+            {/* Context */}
             {showContext && (
                 <div className="flex items-center gap-3 w-full xl:w-auto pr-0 xl:pr-4 xl:border-r border-slate-200 overflow-hidden shrink-0">
                     {onBackClick && (
@@ -51,14 +51,14 @@ const UserHeader = ({
                 </div>
             )}
 
-            {/* KHU VỰC PHẢI: Search & Add Button */}
+            {/* Search and add button */}
             <div className="flex flex-row items-center gap-2 w-full xl:flex-1">
                 <input 
                     type="text" 
                     placeholder={searchPlaceholder} 
                     value={searchTerm}
                     onChange={(e) => onSearchChange(e.target.value)}
-                    className="flex-1 xl:max-w-[300px] px-3 py-2 text-sm transition-all bg-slate-50 border rounded-lg outline-none border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 text-slate-700 font-medium min-w-[120px]" 
+                    className="flex-1 xl:max-w-[300px] px-4 py-2.5 text-sm transition-all bg-slate-50 border rounded-lg outline-none border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 text-slate-700 font-medium min-w-[120px]" 
                 />
                 
                 {onAddClick && (

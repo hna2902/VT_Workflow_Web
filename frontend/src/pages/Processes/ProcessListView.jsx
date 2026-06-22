@@ -11,10 +11,10 @@ import ProcessDelete from './ProcessDelete';
 import WorkflowComments from './WorkflowComments';
 
 const ProcessListView = () => {
-    const { workflowId } = useParams(); // URL format: /workflows/:workflowId/processes
+    const { workflowId } = useParams();
     const navigate = useNavigate();
 
-    // STATES
+    // States
     const [workflowInfo, setWorkflowInfo] = useState(null);
     const [processes, setProcesses] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -27,7 +27,7 @@ const ProcessListView = () => {
     const [deleteModal, setDeleteModal] = useState({ isOpen: false, processItem: null });
     const [alertConfig, setAlertConfig] = useState({ isOpen: false, title: '', message: '', type: 'info' });
 
-    // AUTHORIZATION
+    // Authorization
     const currentUserId = getUserStorage('user_id');
     const currentUserRole = getUserStorage('user_role', 'User');
     const [isPrivileged, setIsPrivileged] = useState(false);
@@ -44,10 +44,9 @@ const ProcessListView = () => {
 
             setWorkflowInfo(wfRes.data);
 
-            // Access Control Logic: Need to check if user is Admin or Leader of the parent Category
+            // Access control
             let hasPrivilege = currentUserRole === 'Admin';
             if (!hasPrivilege && wfRes.data.item) {
-                // Fetch the asset item to find the category leader
                 const itemRes = await axiosClient.get(`processes/items/${wfRes.data.item}/`);
                 if (itemRes.data.category) {
                     const catRes = await axiosClient.get(`processes/categories/${itemRes.data.category}/`);
@@ -126,7 +125,7 @@ const ProcessListView = () => {
     return (
         <main className="flex flex-col flex-1 bg-slate-50 h-full overflow-hidden">
             
-            {/* HEADER */}
+            {/* Header */}
             <UserHeader 
                 searchPlaceholder="Tìm kiếm bước..."
                 searchTerm={searchTerm}
@@ -142,14 +141,14 @@ const ProcessListView = () => {
                 contextLabel="Quy trình"
             />
 
-            {/* BODY */}
+            {/* Body */}
             <div className="flex-1 flex flex-col lg:flex-row overflow-hidden relative">
                 
-                {/* LEFT SIDE: Vertical List */}
+                {/* Left panel */}
                 <div className="flex-1 p-4 sm:p-6 overflow-y-auto custom-scrollbar">
                     <div className="max-w-4xl mx-auto w-full">
                         
-                        {/* WORKFLOW MAIN ATTACHMENT */}
+                        {/* Main attachments */}
                         {(oldImages.length > 0 || oldVideos.length > 0 || oldDocuments.length > 0) && (
                             <div className="mb-8 bg-white rounded-xl border border-slate-200 shadow-sm flex flex-col overflow-hidden">
                                 <div 
@@ -216,9 +215,9 @@ const ProcessListView = () => {
                     </div>
                 </div>
 
-                {/* RIGHT SIDE / BOTTOM SIDE: Comments Sidebar */}
+                {/* Comments sidebar */}
                 <div className={`w-full lg:w-80 xl:w-96 shrink-0 bg-white shadow-[-4px_0_15px_-3px_rgba(0,0,0,0.05)] lg:z-10 border-t lg:border-t-0 lg:border-l border-slate-200 transition-all duration-300 flex flex-col ${isCommentsExpanded ? 'h-[35vh] lg:h-auto' : 'h-[50px] lg:h-auto'}`}>
-                    {/* Universal Comments Header Bar */}
+                    {/* Comments header */}
                     <div 
                         className="flex items-center justify-between px-4 h-[50px] bg-slate-50 border-b border-slate-200 cursor-pointer lg:cursor-default hover:bg-slate-100 lg:hover:bg-slate-50 shrink-0" 
                         onClick={() => {
@@ -235,14 +234,14 @@ const ProcessListView = () => {
                         </span>
                     </div>
                     
-                    {/* Comments Content */}
+                    {/* Comments content */}
                     <div className={`flex-1 overflow-hidden ${!isCommentsExpanded ? 'hidden lg:block' : 'block'}`}>
                         <WorkflowComments workflowId={workflowId} onCountChange={setCommentsCount} />
                     </div>
                 </div>
             </div>
 
-            {/* MODALS */}
+            {/* Modals */}
             <Modal isOpen={isFormOpen} onClose={() => setIsFormOpen(false)} title="Thêm Bước Mới">
                 <ProcessForm workflowId={workflowId} onSuccess={handleRefresh} showAlert={showAlert} onClose={() => setIsFormOpen(false)} />
             </Modal>

@@ -18,7 +18,7 @@ const AdminIndexLayout = ({
     return (
         <div className="flex flex-col h-full bg-slate-100">
             
-            {/* 1. HEADER CHUNG */}
+            {/* Header */}
             <header className="flex flex-col sm:flex-row items-center justify-between px-4 sm:px-6 py-4 bg-white border-b border-slate-300 shrink-0 shadow-sm gap-4">
                 <input 
                     type="text" 
@@ -37,7 +37,7 @@ const AdminIndexLayout = ({
                 )}
             </header>
 
-            {/* 2. BODY CHUNG */}
+            {/* Body */}
             <main className="flex-1 p-4 sm:p-6 overflow-y-auto">
                 {loading ? (
                     <div className="text-center text-slate-500 mt-10">Đang tải dữ liệu...</div>

@@ -3,10 +3,7 @@ import { getUserStorage, setUserStorage } from './storage';
 
 // Create Axios instance
 const axiosClient = axios.create({
-    baseURL: 'http://localhost:8000/api/',
-    headers: {
-        'Content-Type': 'application/json',
-    },
+    baseURL: '/api/',
 });
 
 // Request Interceptor: Attach JWT token
@@ -36,7 +33,7 @@ axiosClient.interceptors.response.use(
             try {
                 const refreshToken = getUserStorage('refresh_token', null);
                 if (!refreshToken) throw new Error("No refresh token");
-                const res = await axios.post('http://localhost:8000/api/token/refresh/', {
+                const res = await axios.post('/api/token/refresh/', {
                     refresh: refreshToken
                 });
                 setUserStorage('access_token', res.data.access);

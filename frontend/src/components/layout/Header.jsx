@@ -37,7 +37,7 @@ const Header = () => {
     
     const displayRole = role === 'Admin' ? 'Quản trị viên' : 'Người dùng';
 
-    // Handle outside click to close dropdowns
+    // Handle outside clicks
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -75,9 +75,53 @@ const Header = () => {
         };
         fetchUnread();
         
-        // Optional: poll every 30s
+        // Fallback polling
         const interval = setInterval(fetchUnread, 30000);
         return () => clearInterval(interval);
+    }, []);
+
+    // WebSocket connection
+    useEffect(() => {
+        const token = localStorage.getItem('access_token');
+        if (!token) return;
+
+        // Build WS URL
+        const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const wsUrl = `${wsProtocol}//${window.location.host}/ws/notifications/?token=${token}`;
+        const ws = new WebSocket(wsUrl);
+
+        ws.onopen = () => {
+            console.log("WebSocket Connected to Notifications");
+        };
+
+        ws.onmessage = (event) => {
+            try {
+                const data = JSON.parse(event.data);
+                if (data.type === 'notification') {
+                    // Prepend notification
+                    setUnreadNotifs(prev => {
+                        const newNotif = {
+                            id: 'ws-' + Date.now(),
+                            message: data.message,
+                            create_at: new Date().toISOString(),
+                            is_read: false
+                        };
+                        return [newNotif, ...prev];
+                    });
+                    setShowBadge(true);
+                }
+            } catch (e) {
+                console.error("Error parsing WS message:", e);
+            }
+        };
+
+        ws.onclose = () => {
+            console.log("WebSocket Disconnected from Notifications");
+        };
+
+        return () => {
+            ws.close();
+        };
     }, []);
 
     const handleBellClick = async () => {
@@ -85,7 +129,7 @@ const Header = () => {
         if (!isBellOpen && showBadge) {
             try {
                 await axiosClient.patch('notifications/notifications/mark_all_read/');
-                // Hide the badge immediately for better UX, but keep unreadNotifs so dropdown renders them
+                // Hide badge
                 setShowBadge(false);
             } catch (error) {
                 console.error("Lỗi đánh dấu đã đọc:", error);
@@ -93,7 +137,7 @@ const Header = () => {
         }
     };
 
-    // Listen for avatar updates across the app
+    // Listen for avatar updates
     useEffect(() => {
         const handleAvatarChange = () => {
             setAvatar(getUserStorage('user_avatar', defaultAvatar));
@@ -135,7 +179,7 @@ const Header = () => {
             <Link to="/home" className="flex items-center h-10 cursor-pointer group">
                 <img src={logo} alt="VT Logo" className="object-contain h-full mr-2 group-hover:scale-105 transition-transform" />
                 <span className="text-xl font-bold text-blue-800 hidden sm:inline">
-                    <span className="text-red-600">VT</span> Workflow
+                    <span className="text-red-600">Quản lý quy trình</span> Viễn Tâm JSC
                 </span>
             </Link>
             
@@ -202,14 +246,13 @@ const Header = () => {
                         </div>
                     </button>
 
-                    {/* Dropdown Menu */}
-                    {/* Bảng Menu Dropdown */}
+                    {/* Dropdown menu */}
                     {isDropdownOpen && (
                         <div className="absolute right-0 mt-4 w-64 bg-white rounded-xl shadow-xl border border-slate-200 overflow-hidden transform origin-top-right transition-all flex flex-col">
                             
-                            {/* KHU VỰC 1: THÔNG TIN */}
+                            {/* Information section */}
                             <div className="px-5 py-4 bg-slate-50/80">
-                                {/* Vai trò */}
+                                {/* Role */}
                                 <div className="mb-4">
                                     <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Vai trò hiện tại</p>
                                     <p className="text-sm font-bold text-slate-800 flex items-center gap-2">
@@ -217,10 +260,10 @@ const Header = () => {
                                         {role === 'Admin' && <span className="px-2 py-0.5 text-[10px] uppercase tracking-wider bg-red-100 text-red-600 rounded-full">Admin</span>}
                                     </p>
                                 </div>
-                                {/* Ngày tham gia */}
+                                {/* Join date */}
                                 <div>
                                     <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Ngày tham gia</p>
-                                    {/* Nhốt Icon lịch vào hộp w-7 để thẳng hàng tuyệt đối với các nút bên dưới */}
+                                    {/* Icon alignment */}
                                     <p className="text-sm font-medium text-slate-600 flex items-center">
                                         <div className="w-7 flex justify-start text-slate-400">
                                             <FaCalendarAlt className="text-lg" />
@@ -230,12 +273,12 @@ const Header = () => {
                                 </div>
                             </div>
 
-                            {/* ĐƯỜNG KẺ 1 (Dùng div riêng thay vì border để kiểm soát 100% độ dày) */}
+                            {/* Divider */}
                             <div className="h-px bg-slate-100 w-full"></div>
 
-                            {/* KHU VỰC 2: MENU ĐIỀU HƯỚNG */}
+                            {/* Navigation menu */}
                             <Link to="/notifications" onClick={() => setIsDropdownOpen(false)} className="flex items-center px-5 py-3.5 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-blue-600 transition-colors">
-                                {/* Hộp nhốt Icon */}
+                                {/* Icon container */}
                                 <div className="w-7 flex justify-start text-slate-400">
                                     <FaListAlt className="text-lg" />
                                 </div>
@@ -243,7 +286,7 @@ const Header = () => {
                             </Link>
                             {/* Notification button */}
                             <button 
-                                onClick={handleToggleNotif} // Gọi hàm API ở đây
+                                onClick={handleToggleNotif} // Call API
                                 className="w-full flex items-center justify-between px-5 py-3.5 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors cursor-pointer"
                             >
                                 <div className="flex items-center">
@@ -257,24 +300,24 @@ const Header = () => {
                                 </div>
                             </button>
                             <Link to="/information" onClick={() => setIsDropdownOpen(false)} className="flex items-center px-5 py-3.5 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-blue-600 transition-colors">
-                                {/* Hộp nhốt Icon */}
+                                {/* Icon container */}
                                 <div className="w-7 flex justify-start text-slate-400">
                                     <FaCog className="text-lg" />
                                 </div>
                                 <span>Tài khoản</span>
                             </Link>
 
-                            {/* ĐƯỜNG KẺ 2 */}
+                            {/* Divider */}
                             <div className="h-px bg-slate-100 w-full"></div>
 
-                            {/* KHU VỰC 3: ĐĂNG XUẤT */}
-                            {/* Dùng text-left để ép thẻ button vô kỷ luật phải tuân thủ lề */}
+                            {/* Logout section */}
+                            {/* Align text left */}
                             <button 
                                 onClick={handleLogout}
-                                // SỬA: Thêm cursor-pointer và đổi hover:bg-red-50 thành hover:bg-red-100
+                                // Styling updates
                                 className="w-full flex items-center text-left px-5 py-3.5 text-sm font-bold text-red-600 hover:bg-red-100 hover:text-red-700 transition-colors cursor-pointer"
                             >
-                                {/* Hộp nhốt Icon */}
+                                {/* Icon container */}
                                 <div className="w-7 flex justify-start text-red-600">
                                     <FaSignOutAlt className="text-lg" />
                                 </div>

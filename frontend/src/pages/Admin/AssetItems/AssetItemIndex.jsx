@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback} from 'react';
-import { useParams } from 'react-router-dom'; // Dùng để lấy ID từ URL
+import { useParams } from 'react-router-dom'; // Get ID
 import axiosClient from '../../../utils/axiosClients';
 import Modal from '../../../components/common/Modal';
 import AdminIndexLayout from '../../../components/layout/AdminIndexLayout';
@@ -17,6 +17,7 @@ const AssetItemIndex = () => {
     const itemsPerPage = 10;
     
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [editModal, setEditModal] = useState({ isOpen: false, item: null });
     const [alertConfig, setAlertConfig] = useState({ isOpen: false, title: '', message: '', type: 'info' });
     const [deleteModal, setDeleteModal] = useState({ isOpen: false, item: null });
 
@@ -44,7 +45,8 @@ const AssetItemIndex = () => {
     const handleRefresh = () => {
         fetchAssets(); 
         setIsModalOpen(false);
-        showAlert("Thành công", "Đã thêm tài sản mới!", "success");
+        setEditModal({ isOpen: false, item: null });
+        showAlert("Thành công", "Đã lưu thông tin tài sản!", "success");
     };
 
     const handleSaveEdit = async (id, updatedData) => {
@@ -93,6 +95,7 @@ const AssetItemIndex = () => {
                     key={item.id} 
                     item={item} 
                     onSave={handleSaveEdit} 
+                    onEdit={(itemToEdit) => setEditModal({ isOpen: true, item: itemToEdit })}
                     onDelete={(itemToDelete) => setDeleteModal({ isOpen: true, item: itemToDelete })} 
                 />
             )}
@@ -106,8 +109,20 @@ const AssetItemIndex = () => {
             onPageChange={setCurrentPage}
         >
             <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Thêm Tài Sản Mới">
-                {/* Truyền categoryId vào Form để khi tạo mới, Backend biết nó thuộc Category nào */}
+                {/* Pass categoryId for creation */}
                 <AssetItemForm onSuccess={handleRefresh} showAlert={showAlert} onClose={() => setIsModalOpen(false)} categoryId={categoryId} />
+            </Modal>
+
+            <Modal isOpen={editModal.isOpen} onClose={() => setEditModal({ isOpen: false, item: null })} title="Cập Nhật Tài Sản">
+                {editModal.item && (
+                    <AssetItemForm 
+                        onSuccess={handleRefresh} 
+                        showAlert={showAlert} 
+                        onClose={() => setEditModal({ isOpen: false, item: null })} 
+                        categoryId={categoryId}
+                        initialData={editModal.item} 
+                    />
+                )}
             </Modal>
 
             <Modal isOpen={alertConfig.isOpen} onClose={closeAlert} title={alertConfig.title}>

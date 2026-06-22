@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const CategoryRow = ({ category, onSave, onDelete }) => {
-    // Mang state chỉnh sửa vào cục bộ (Local State)
+    // Local editing state
     const [isEditing, setIsEditing] = useState(false);
     const [localTitle, setLocalTitle] = useState(category.title);
     const [localStatus, setLocalStatus] = useState(category.status);
@@ -63,7 +63,7 @@ const CategoryRow = ({ category, onSave, onDelete }) => {
                 ) : (
                     <>
                         <h3 
-                            onClick={() => navigate(`/categories/${category.id}/assets`)} // Đổi URL này cho khớp với Route của bạn nhé
+                            onClick={() => navigate(`/admin/categories/${category.id}/assets`)}
                             className="text-lg font-bold text-blue-600 hover:text-blue-800 hover:underline cursor-pointer break-words w-fit transition-colors"
                         >
                             {category.title}

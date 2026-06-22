@@ -13,10 +13,10 @@ const NotificationCenter = () => {
 
     const fetchNotifications = async () => {
         try {
-            // Fetch all notifications for the user
+            // Fetch notifications
             const res = await axiosClient.get('notifications/notifications/');
             setNotifications(res.data);
-            // Auto mark all as read when opening the page
+            // Mark all as read
             await axiosClient.patch('notifications/notifications/mark_all_read/');
             
             setLoading(false);

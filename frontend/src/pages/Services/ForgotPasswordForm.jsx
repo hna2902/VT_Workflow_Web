@@ -77,7 +77,7 @@ const ForgotPasswordForm = () => {
 
                     <form onSubmit={handleResetRequest} className="space-y-5">
                         
-                        {/* Email */}
+                        {/* Email input */}
                         <div className="relative">
                             <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-slate-400">
                                 <FaEnvelope />
@@ -102,7 +102,7 @@ const ForgotPasswordForm = () => {
                         </Link>
                     </div>
 
-                    {/* Popup Modal */}
+                    {/* Popup modal */}
                     <Modal 
                         isOpen={isSuccessModalOpen} 
                         title="Đã gửi liên kết"

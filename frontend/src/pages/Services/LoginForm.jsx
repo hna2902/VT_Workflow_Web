@@ -38,7 +38,7 @@ const Login = () => {
             setUserStorage('user_notif_enabled', String(notifStatus));
             setUserStorage('user_created_at', userData.created_at);
             if (userData.avatar) {
-                const avatarUrl = userData.avatar.startsWith('http') ? userData.avatar : 'http://localhost:8000' + userData.avatar;
+                const avatarUrl = userData.avatar.startsWith('http') ? userData.avatar : userData.avatar;
                 setUserStorage('user_avatar', avatarUrl);
             } else {
                 localStorage.removeItem('user_avatar');
@@ -69,20 +69,22 @@ const Login = () => {
             </div>
 
             <div className="relative z-10 flex flex-col lg:flex-row items-center justify-center lg:justify-between w-full max-w-7xl px-4 sm:px-6 lg:px-12 gap-8 lg:gap-12">
-                <div className="flex-1 text-center lg:text-left pt-0 lg:pt-0">
-                    <div className="flex items-center justify-center lg:justify-start gap-4 mb-6">
-                        <img src={logo} alt="VT Logo" className="h-16 lg:h-20 object-contain drop-shadow-xl bg-white/10 p-2 rounded-xl backdrop-blur-sm" />
-                        <h1 className="text-5xl lg:text-6xl font-extrabold tracking-tight text-white drop-shadow-lg">
-                            <span className="text-red-500">VT</span> Workflow
-                        </h1>
+                <div className="flex-1 flex flex-col items-center lg:items-start text-center lg:text-left w-full mb-8 lg:mb-0 pt-8 lg:pt-0">
+                    <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-5 mb-8">
+                        <img src={logo} alt="VT Logo" className="h-20 sm:h-24 lg:h-28 object-contain drop-shadow-xl bg-white/10 p-3 rounded-2xl backdrop-blur-md shrink-0" />
+                        <div className="flex flex-col items-center sm:items-start">
+                            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-white drop-shadow-lg leading-tight">
+                                <span className="text-red-500">VT</span> Workflow
+                            </h1>
+                            <span className="text-white text-lg sm:text-xl lg:text-2xl font-bold tracking-wide mt-1 uppercase opacity-90 drop-shadow-md">
+                                Quản lý quy trình làm việc
+                            </span>
+                        </div>
                     </div>
                     
-                    <h2 className="text-2xl lg:text-3xl font-bold mb-4 leading-tight text-white drop-shadow-md">
-                        Lên kế hoạch cho hành trình <br className="hidden lg:block"/> công việc của bạn.
+                    <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-4 lg:mb-6 leading-snug text-white drop-shadow-md max-w-2xl mx-auto lg:mx-0">
+                        “Ươm mầm uy tín -<br className="hidden sm:block lg:hidden" /> Chăm sóc chất lượng -<br className="hidden sm:block lg:hidden" /> Gặt hái niềm tin”
                     </h2>
-                    <p className="text-lg text-slate-200 leading-relaxed max-w-lg mx-auto lg:mx-0 drop-shadow">
-                        Hệ thống quản lý quy trình nghiệp vụ nội bộ, giúp tối ưu hóa thời gian và tăng cường sự phối hợp giữa các phòng ban.
-                    </p>
                 </div>
 
                 <div className="w-full max-w-[420px] bg-white p-8 sm:p-10 rounded-[24px] shadow-[0_15px_40px_rgba(0,0,0,0.3)]">
@@ -99,7 +101,6 @@ const Login = () => {
 
                     <form onSubmit={handleLogin} className="space-y-5">
                         
-                        {/* Username */}
                         <div className="relative">
                             <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-slate-400">
                                 <FaUser />
@@ -110,7 +111,6 @@ const Login = () => {
                             />
                         </div>
 
-                        {/* Password */}
                         <div className="relative">
                             <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-slate-400">
                                 <FaLock />
@@ -144,7 +144,6 @@ const Login = () => {
                             {loading ? 'ĐANG XÁC THỰC...' : 'ĐĂNG NHẬP'}
                         </button>
                     </form>
-                    {/* Switch to Register */}
                     <div className="mt-5 text-center border-t border-slate-100">
                         <p className="text-sm text-slate-600">
                             Chưa có tài khoản?{' '}
@@ -153,13 +152,11 @@ const Login = () => {
                             </Link>
                         </p>
                     </div>
-                    {/* Popup Modal */}
                     <Modal 
                         isOpen={isSuccessModalOpen} 
                         title="Xác thực thành công"
                     >
                         <div className="flex flex-col items-center py-6">
-                            {/* Thêm class animate-bounce để icon nảy lên nhìn vui mắt hơn */}
                             <FaCheckCircle className="text-6xl text-green-500 mb-4 animate-bounce" />
                             <p className="text-lg font-semibold text-slate-800 mb-1">
                                 Chào mừng trở lại!
@@ -175,7 +172,6 @@ const Login = () => {
                     </Modal>
                 </div>
             </div>
-            
         </div>
     );
 };

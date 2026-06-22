@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { FaTrash, FaChevronDown, FaChevronUp, FaPaperclip, FaFile, FaVideo, FaImage } from 'react-icons/fa';
 import axiosClient from '../../utils/axiosClients';
 
-// Editing is delegated to the detailed view, while deletion is kept here for quick management
 const ProcessRow = ({ processItem, onDelete, isPrivileged, onUpdateSuccess }) => {
     const [isExpanded, setIsExpanded] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
@@ -19,7 +18,7 @@ const ProcessRow = ({ processItem, onDelete, isPrivileged, onUpdateSuccess }) =>
         if (!fileUrl) return null;
         if (fileUrl.startsWith('http')) return fileUrl; 
 
-        let baseURL = axiosClient.defaults.baseURL || 'http://localhost:8000';
+        let baseURL = axiosClient.defaults.baseURL;
         baseURL = baseURL.replace(/\/api\/?$/, ''); 
         return `${baseURL}${fileUrl.startsWith('/') ? fileUrl : '/' + fileUrl}`;
     };
@@ -39,7 +38,7 @@ const ProcessRow = ({ processItem, onDelete, isPrivileged, onUpdateSuccess }) =>
     const handleEditClick = (e) => {
         e.stopPropagation();
         setIsEditing(true);
-        setIsExpanded(true); // Auto expand when editing
+        setIsExpanded(true);
         setLocalName(processItem.name);
         setLocalStep(processItem.step);
         setLocalContent(processItem.content);
@@ -57,7 +56,7 @@ const ProcessRow = ({ processItem, onDelete, isPrivileged, onUpdateSuccess }) =>
         try {
             await axiosClient.delete(`processes/processimage/${imageId}/`);
             setExistingImages(prev => prev.filter(img => img.id !== imageId));
-            if (onUpdateSuccess) onUpdateSuccess(); // Refresh parent to sync
+            if (onUpdateSuccess) onUpdateSuccess();
         } catch (error) {
             alert("Lỗi khi xóa file!");
             console.error(error);
@@ -67,14 +66,14 @@ const ProcessRow = ({ processItem, onDelete, isPrivileged, onUpdateSuccess }) =>
     const handleSaveEdit = async () => {
         setIsSaving(true);
         try {
-            // Update the process details
+            // Update details
             const formData = new FormData();
             formData.append('name', localName);
             formData.append('step', localStep);
             formData.append('content', localContent);
             formData.append('workflow', processItem.workflow);
 
-            // Upload new files if any
+            // Upload files
             newFiles.forEach(file => {
                 formData.append('images[]', file);
             });
@@ -85,7 +84,7 @@ const ProcessRow = ({ processItem, onDelete, isPrivileged, onUpdateSuccess }) =>
 
             setIsEditing(false);
             setNewFiles([]);
-            if (onUpdateSuccess) onUpdateSuccess(); // Call this to refresh the list in parent
+            if (onUpdateSuccess) onUpdateSuccess();
         } catch (error) {
             console.error("Django Error:", error.response?.data);
             alert("Lỗi khi lưu! Vui lòng kiểm tra dữ liệu.");
@@ -97,7 +96,7 @@ const ProcessRow = ({ processItem, onDelete, isPrivileged, onUpdateSuccess }) =>
     return (
         <div className={`mb-3 transition-all duration-300 bg-white border rounded-xl overflow-hidden shadow-sm hover:shadow-md ${isExpanded ? 'border-blue-400 ring-1 ring-blue-100' : 'border-slate-200 hover:border-blue-300'}`}>
             
-            {/* HEADER */}
+            {/* Header */}
             <div 
                 onClick={() => setIsExpanded(!isExpanded)}
                 className="flex items-center justify-between p-4 cursor-pointer group bg-white"
@@ -146,7 +145,7 @@ const ProcessRow = ({ processItem, onDelete, isPrivileged, onUpdateSuccess }) =>
                 </div>
             </div>
 
-            {/* BODY isExpanded = true */}
+            {/* Body */}
             {isExpanded && !isEditing && (
                 <div className="p-4 sm:p-5 bg-slate-50 border-t border-slate-100 animate-in slide-in-from-top-2 fade-in duration-200">
                     <div className="mb-4">

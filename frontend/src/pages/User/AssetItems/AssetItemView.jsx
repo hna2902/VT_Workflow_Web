@@ -77,7 +77,7 @@ const AssetItemView = () => {
     const getImageUrl = (path) => {
         if (!path) return null;
         if (path.startsWith('http')) return path;
-        return `http://localhost:8000${path.startsWith('/') ? '' : '/'}${path}`;
+        return `${path.startsWith('/') ? '' : '/'}${path}`;
     };
 
     const filteredAssets = assets.filter(item => 
@@ -94,7 +94,7 @@ const AssetItemView = () => {
                 addButtonText="+ Thêm tài sản"
             />
 
-            {/* Asset Cards Grid */}
+            {/* Asset cards */}
             <div className="flex-1 p-4 sm:p-6 overflow-y-auto">
                 {loading ? (
                     <div className="text-slate-500 text-center italic mt-10">Đang tải dữ liệu...</div>
@@ -119,7 +119,7 @@ const AssetItemView = () => {
                                         <button 
                                             onClick={(e) => { 
                                                 e.stopPropagation(); 
-                                                setEditItem(item); // Gán tài sản vào state để Form nhận diện là đang Edit
+                                                setEditItem(item); // Set editing item
                                                 setIsFormOpen(true); 
                                             }}
                                             className="flex items-center justify-center w-7 h-7 text-xs text-blue-600 bg-white/90 backdrop-blur border border-blue-100 rounded-full shadow hover:bg-blue-50 hover:text-blue-700 transition-colors"

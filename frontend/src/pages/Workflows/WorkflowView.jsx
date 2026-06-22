@@ -10,21 +10,21 @@ import UserHeader from '../../components/layout/UserHeader';
 import Modal from '../../components/common/Modal';
 
 const WorkflowView = () => {
-    const { itemId } = useParams(); // Format: /assets/:itemId/workflows
+    const { itemId } = useParams();
     const navigate = useNavigate();
 
-    // STATE DỮ LIỆU
+    // State
     const [assetInfo, setAssetInfo] = useState(null);
     const [workflows, setWorkflows] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
 
-    // STATE MODAL
+    // Modals
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [deleteModal, setDeleteModal] = useState({ isOpen: false, workflow: null });
     const [alertConfig, setAlertConfig] = useState({ isOpen: false, title: '', message: '', type: 'info' });
 
-    // STATE QUYỀN TRUY CẬP (OBJECT-LEVEL PERMISSION)
+    // Permissions
     const currentUserId = getUserStorage('user_id');
     const currentUserRole = getUserStorage('user_role', 'User');
     const [isPrivileged, setIsPrivileged] = useState(false);
@@ -35,13 +35,13 @@ const WorkflowView = () => {
     const getImageUrl = (path) => {
         if (!path) return null;
         if (path.startsWith('http')) return path;
-        return `http://localhost:8000${path.startsWith('/') ? '' : '/'}${path}`;
+        return `${path.startsWith('/') ? '' : '/'}${path}`;
     };
 
-    // FETCH DỮ LIỆU & KIỂM TRA QUYỀN
+    // Fetch data
     const fetchData = useCallback(async () => {
         try {
-            // Bước 1: Gọi API lấy Asset và Workflows
+            // Fetch asset and workflows
             const [assetRes, workflowRes] = await Promise.all([
                 axiosClient.get(`processes/items/${itemId}/`),
                 axiosClient.get(`processes/workflows/?item=${itemId}`)
@@ -49,8 +49,7 @@ const WorkflowView = () => {
 
             setAssetInfo(assetRes.data);
 
-            // Bước 2: TRUY NGƯỢC QUYỀN. 
-            // Từ Asset -> Lấy ID Category -> Gọi API Category -> So sánh Leader ID
+            // Verify permissions
             let hasPrivilege = currentUserRole === 'Admin';
             if (!hasPrivilege && assetRes.data.category) {
                 const catRes = await axiosClient.get(`processes/categories/${assetRes.data.category}/`);
@@ -73,7 +72,7 @@ const WorkflowView = () => {
         if (itemId) fetchData();
     }, [fetchData]);
 
-    // HANDLERS
+    // Event handlers
     const handleRefresh = () => {
         fetchData();
         setIsFormOpen(false);
@@ -82,14 +81,14 @@ const WorkflowView = () => {
 
     const handleSaveEdit = async (id, updatedData) => {
         try {
-            // 1. Delete old files if requested
+            // Remove old files
             if (updatedData.deleted_file_ids && updatedData.deleted_file_ids.length > 0) {
                 await Promise.all(updatedData.deleted_file_ids.map(fileId => 
                     axiosClient.delete(`processes/workflow-files/${fileId}/`)
                 ));
             }
 
-            // 2. Upload new data (and new files)
+            // Upload new data
             const payload = new FormData();
             payload.append('name', updatedData.name);
             if (updatedData.description !== undefined && updatedData.description !== null) {
@@ -109,7 +108,7 @@ const WorkflowView = () => {
             const config = { headers: { 'Content-Type': 'multipart/form-data' } };
             const res = await axiosClient.patch(`processes/workflows/${id}/`, payload, config);
             
-            // Reload workflow data directly from backend response
+            // Update local state
             setWorkflows(workflows.map(w => w.id === id ? { ...w, ...res.data } : w));
             showAlert("Thành công", "Đã cập nhật quy trình!", "success");
         } catch (error) {
@@ -138,7 +137,7 @@ const WorkflowView = () => {
     return (
         <main className="flex flex-col flex-1 bg-slate-50 h-full overflow-hidden">
             
-            {/* 2. KHU VỰC TOOLBAR (Dùng chung UserHeader) */}
+            {/* Toolbar */}
             <UserHeader 
                 searchPlaceholder="Tìm kiếm quy trình..."
                 searchTerm={searchTerm}
@@ -146,7 +145,7 @@ const WorkflowView = () => {
                 onAddClick={isPrivileged ? () => setIsFormOpen(true) : null}
                 addButtonText="+ Thêm quy trình"
                 
-                // Mở khóa sức mạnh Context trên Header
+                // Header context
                 showContext={!!assetInfo} 
                 onBackClick={() => navigate(-1)}
                 contextImage={assetInfo ? getImageUrl(assetInfo.image) : null}
@@ -154,7 +153,7 @@ const WorkflowView = () => {
                 contextLabel="Tài sản"
             />
 
-            {/* KHU VỰC BODY BÂY GIỜ CHỈ CÒN ĐÚNG CÁI DANH SÁCH DỌC */}
+            {/* List view */}
             <div className="flex-1 p-4 sm:p-6 overflow-y-auto">
                 <div className="max-w-4xl mx-auto w-full">
                     {workflows.length === 0 ? (
@@ -181,7 +180,7 @@ const WorkflowView = () => {
                 </div>
             </div>
 
-            {/* 4. KHU VỰC MODALS */}
+            {/* Modals */}
             <Modal isOpen={isFormOpen} onClose={() => setIsFormOpen(false)} title="Thêm Quy Trình Mới">
                 <WorkflowForm 
                     itemId={itemId} 

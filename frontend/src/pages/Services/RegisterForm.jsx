@@ -6,7 +6,6 @@ import { FaUser, FaLock, FaIdCard, FaEnvelope, FaCheckCircle } from 'react-icons
 import Modal from '../../components/common/Modal';
 
 const RegisterForm = () => {
-    // 1. State initialization
     const [name, setName] = useState('');
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
@@ -16,12 +15,11 @@ const RegisterForm = () => {
     const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
     const navigate = useNavigate();
 
-    // 2. Form submission handler
     const handleRegister = async (e) => {
         e.preventDefault();
         setError('');
 
-        // Client-side validation for passwords
+        // Client-side validation
         if (password !== confirmPassword) {
             setError('Mật khẩu xác nhận không khớp!');
             return;
@@ -30,8 +28,8 @@ const RegisterForm = () => {
         setLoading(true);
 
         try {
-            // Post data to Django backend
-            await axios.post('http://localhost:8000/api/users/register/', {
+            // Send API request
+            await axios.post('/api/users/register/', {
                 username: username,
                 name: name,
                 password: password
@@ -42,7 +40,7 @@ const RegisterForm = () => {
             
         } catch (err) {
             console.error("Register error:", err);
-            // Handle backend validation errors
+            // Handle API errors
             if (err.response?.data?.username) {
                 setError('Tên đăng nhập này đã tồn tại!');
             } else {
@@ -59,11 +57,9 @@ const RegisterForm = () => {
     };
 
     return (
-        // 3. Main wrapper
-        <div className="relative flex items-center justify-center min-h-screen py-10">
+        <div className="relative flex items-center justify-center min-h-[100dvh] overflow-y-auto py-6">
             
-            {/* Background layer */}
-            <div className="absolute inset-0 z-0 fixed">
+            <div className="absolute inset-0 z-0">
                 <img 
                     src="https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=2000&auto=format&fit=crop" 
                     alt="Background" 
@@ -72,38 +68,32 @@ const RegisterForm = () => {
                 <div className="absolute inset-0 bg-black/40"></div>
             </div>
 
-            {/* Content layer */}
-            <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between w-full max-w-7xl px-6 lg:px-12 gap-12">
+            <div className="relative z-10 flex flex-col lg:flex-row items-center justify-center lg:justify-between w-full max-w-7xl px-4 sm:px-6 lg:px-12 gap-8 lg:gap-12">
                 
-                {/* Left branding column */}
-                <div className="flex-1 text-center lg:text-left pt-10 lg:pt-0 hidden md:block">
-                    <div className="flex items-center justify-center lg:justify-start gap-4 mb-6">
-                        <img src={logo} alt="VT Logo" className="h-16 lg:h-20 object-contain drop-shadow-xl bg-white/10 p-2 rounded-xl backdrop-blur-sm" />
-                        <h1 className="text-5xl lg:text-6xl font-extrabold tracking-tight text-white drop-shadow-lg">
-                            <span className="text-red-500">VT</span> Workflow
-                        </h1>
+                <div className="flex-1 flex flex-col items-center lg:items-start text-center lg:text-left w-full mb-8 lg:mb-0 pt-8 lg:pt-0">
+                    <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-5 mb-8">
+                        <img src={logo} alt="VT Logo" className="h-20 sm:h-24 lg:h-28 object-contain drop-shadow-xl bg-white/10 p-3 rounded-2xl backdrop-blur-md shrink-0" />
+                        <div className="flex flex-col items-center sm:items-start">
+                            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-white drop-shadow-lg leading-tight">
+                                <span className="text-red-500">VT</span> Workflow
+                            </h1>
+                            <span className="text-white text-lg sm:text-xl lg:text-2xl font-bold tracking-wide mt-1 uppercase opacity-90 drop-shadow-md">
+                                Quản lý quy trình làm việc
+                            </span>
+                        </div>
                     </div>
-                    <h2 className="text-2xl lg:text-3xl font-bold mb-4 leading-tight text-white drop-shadow-md">
-                        Gia nhập cùng đội ngũ <br className="hidden lg:block"/> kiến tạo tương lai.
+                    
+                    <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-4 lg:mb-6 leading-snug text-white drop-shadow-md max-w-2xl mx-auto lg:mx-0">
+                        “Ươm mầm uy tín -<br className="hidden sm:block lg:hidden" /> Chăm sóc chất lượng -<br className="hidden sm:block lg:hidden" /> Gặt hái niềm tin”
                     </h2>
-                    <p className="text-lg text-slate-200 leading-relaxed max-w-lg mx-auto lg:mx-0 drop-shadow">
-                        Đăng ký tài khoản để truy cập hệ thống quản lý quy trình, tham gia vào các dự án và theo dõi tiến độ công việc một cách chuyên nghiệp nhất.
-                    </p>
                 </div>
 
-                {/* Right form card */}
-                <div className="w-full max-w-md bg-white p-6 sm:p-8 rounded-[24px] shadow-[0_15px_40px_rgba(0,0,0,0.3)] mt-10 mb-10">
-                    
-                    <div className="md:hidden flex flex-col items-center mb-6">
-                        <img src={logo} alt="VT Logo" className="h-12 mb-3 object-contain" />
-                        <h2 className="text-xl font-bold text-slate-800"><span className="text-red-600">VT</span> Workflow</h2>
-                    </div>
+                <div className="w-full max-w-[420px] bg-white p-8 sm:p-10 rounded-[24px] shadow-[0_15px_40px_rgba(0,0,0,0.3)]">
 
                     <h3 className="text-2xl font-bold text-center text-slate-800 mb-6">
                         Đăng ký tài khoản
                     </h3>
 
-                    {/* Error display */}
                     {error && (
                         <div className="p-3 mb-6 text-sm font-medium text-red-700 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2">
                             <span>⚠️</span> {error}
@@ -112,7 +102,6 @@ const RegisterForm = () => {
 
                     <form onSubmit={handleRegister} className="flex flex-col gap-3">
                         
-                        {/* Name Input */}
                         <div className="relative">
                             <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-slate-400">
                                 <FaIdCard />
@@ -123,7 +112,6 @@ const RegisterForm = () => {
                             />
                         </div>
 
-                        {/* Username Input */}
                         <div className="relative">
                             <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-slate-400">
                                 <FaUser />
@@ -134,7 +122,6 @@ const RegisterForm = () => {
                             />
                         </div>
 
-                        {/* Password Input */}
                         <div className="relative">
                             <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-slate-400">
                                 <FaLock />
@@ -145,7 +132,6 @@ const RegisterForm = () => {
                             />
                         </div>
 
-                        {/* Confirm Password Input */}
                         <div className="relative">
                             <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-slate-400">
                                 <FaLock />
@@ -164,7 +150,6 @@ const RegisterForm = () => {
                         </button>
                     </form>
 
-                    {/* Switch to Login link */}
                     <div className="mt-2 text-center border-t border-slate-100 pt-6">
                         <p className="text-sm text-slate-600">
                             Đã có tài khoản?{' '}
@@ -173,7 +158,6 @@ const RegisterForm = () => {
                             </Link>
                         </p>
                     </div>
-                    {/* Popup Modal */}
                     <Modal 
                         isOpen={isSuccessModalOpen} 
                         onClose={handleModalClose} 

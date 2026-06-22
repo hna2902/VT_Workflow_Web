@@ -1,9 +1,7 @@
 import React, { useState } from 'react';
 import axiosClient from '../../utils/axiosClients';
 
-// REASON: This form handles creating a new Workflow bound to an AssetItem.
-// It strictly utilizes 'name' and 'description' to remain 100% synchronized 
-// with the backend Django Workflow model fields.
+// Create new workflow
 const WorkflowForm = ({ onSuccess, onClose, showAlert, itemId }) => {
     const [name, setName] = useState('');
     const [description, setDescription] = useState('');
@@ -38,7 +36,6 @@ const WorkflowForm = ({ onSuccess, onClose, showAlert, itemId }) => {
 
     return (
         <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
-            {/* Name Field */}
             <div>
                 <label className="block text-sm font-semibold text-slate-700 mb-1.5">
                     Tên quy trình <span className="text-red-500">*</span>
@@ -54,7 +51,6 @@ const WorkflowForm = ({ onSuccess, onClose, showAlert, itemId }) => {
                 />
             </div>
 
-            {/* Description Field */}
             <div>
                 <label className="block text-sm font-semibold text-slate-700 mb-1.5">
                     Mô tả quy trình
@@ -67,14 +63,12 @@ const WorkflowForm = ({ onSuccess, onClose, showAlert, itemId }) => {
                 />
             </div>
 
-            {/* File Fields */}
             <div className="space-y-3">
                 <label className="block text-sm font-semibold text-slate-700">
                     Đính kèm tài liệu chung (Tùy chọn)
                 </label>
                 
                 <div className="grid grid-cols-1 gap-3">
-                    {/* Image */}
                     <div className="flex flex-col border border-slate-200 rounded-xl p-3 bg-slate-50">
                         <span className="text-xs font-bold text-slate-600 mb-1">Ảnh bìa / Hình ảnh</span>
                         <input 
@@ -87,7 +81,6 @@ const WorkflowForm = ({ onSuccess, onClose, showAlert, itemId }) => {
                         {imageFiles.length > 0 && <span className="text-[10px] text-green-600 font-medium mt-1">Đã chọn {imageFiles.length} ảnh</span>}
                     </div>
                     
-                    {/* Video */}
                     <div className="flex flex-col border border-slate-200 rounded-xl p-3 bg-slate-50">
                         <span className="text-xs font-bold text-slate-600 mb-1">Video hướng dẫn</span>
                         <input 
@@ -100,7 +93,6 @@ const WorkflowForm = ({ onSuccess, onClose, showAlert, itemId }) => {
                         {videoFiles.length > 0 && <span className="text-[10px] text-green-600 font-medium mt-1">Đã chọn {videoFiles.length} video</span>}
                     </div>
 
-                    {/* Document */}
                     <div className="flex flex-col border border-slate-200 rounded-xl p-3 bg-slate-50">
                         <span className="text-xs font-bold text-slate-600 mb-1">Tài liệu đính kèm (PDF, Word, Excel...)</span>
                         <input 
@@ -115,7 +107,6 @@ const WorkflowForm = ({ onSuccess, onClose, showAlert, itemId }) => {
                 </div>
             </div>
             
-            {/* Action Buttons Section */}
             <div className="flex flex-col-reverse sm:flex-row gap-3 pt-5 mt-2 border-t border-slate-200">
                 <button 
                     type="button" 

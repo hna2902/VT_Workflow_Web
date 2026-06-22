@@ -10,7 +10,7 @@ import {
 } from 'react-icons/fa';
 import AdminIndexLayout from '../../../components/layout/AdminIndexLayout';
 import Modal from '../../../components/common/Modal';
-import { getSessionStorage } from '../../../utils/storage';
+import { getSessionStorage, setSessionStorage, getUserStorage, setUserStorage } from '../../../utils/storage';
 
 const UserRow = ({ user, categories, onSave, onDelete }) => {
     const [localRole, setLocalRole] = useState(user.role || 'User');
@@ -46,17 +46,17 @@ const UserRow = ({ user, categories, onSave, onDelete }) => {
         if (avatarPath.startsWith('http')) return avatarPath;
         if (avatarPath.includes('media/')) {
             const cleanPath = avatarPath.startsWith('/') ? avatarPath : `/${avatarPath}`;
-            return `http://localhost:8000${cleanPath}`;
+            return `${cleanPath}`;
         }
         
         const cleanPath = avatarPath.startsWith('/') ? avatarPath : `/${avatarPath}`;
-        return `http://localhost:8000/media${cleanPath}`;
+        return `/media${cleanPath}`;
     };
 
     return (
         <>
             <div ref={rowRef} className="flex flex-col lg:flex-row lg:items-start justify-between p-5 transition-colors bg-white border border-l-4 border-slate-300 border-l-blue-500 rounded-xl shadow-sm hover:bg-slate-50 gap-6">
-                {/* CỘT 1: Avatar, Role Dropdown & Thông tin cứng */}
+                {/* Avatar and info */}
                 <div className="flex items-start gap-4 lg:w-1/3">
                     <div className="flex flex-col items-center gap-2 shrink-0 w-20">
                         <div className="w-16 h-16 rounded-full overflow-hidden border border-slate-200 shadow-sm shrink-0">
@@ -71,7 +71,7 @@ const UserRow = ({ user, categories, onSave, onDelete }) => {
                             )}
                         </div>
                         
-                        {/* DROPDOWN: Chỉnh Role (Nằm dưới Avatar) */}
+                        {/* Role dropdown */}
                         <div className="relative w-full">
                             <div 
                                 onClick={() => setOpenDropdown(openDropdown === 'role' ? null : 'role')}
@@ -115,6 +115,7 @@ const UserRow = ({ user, categories, onSave, onDelete }) => {
                                 type={showPassword ? 'text' : 'password'} 
                                 value={password} 
                                 onChange={(e) => setPassword(e.target.value)}
+                                autoComplete="new-password"
                                 className="w-full pl-4 pr-10 py-2.5 text-sm font-medium text-slate-800 bg-slate-50 border border-slate-300 rounded-xl outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:bg-white transition-all"
                                 placeholder="********" 
                             />
@@ -312,14 +313,16 @@ const UsersIndex = () => {
                         <input 
                             type="password" 
                             placeholder="Nhập mật khẩu Admin để xác thực"
-                            className="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl outline-none focus:border-blue-500"
+                            value={confirmPassword}
                             onChange={(e) => setConfirmPassword(e.target.value)}
+                            autoComplete="new-password"
+                            className="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl outline-none focus:border-blue-500"
                         />
                     )}
                     <div className="flex flex-col-reverse sm:flex-row gap-3 pt-5 mt-2 border-t border-slate-200">
                         <button 
                             type="button" 
-                            onClick={() => setDeleteModal({...deleteModal, isOpen: false})} // Đóng Modal
+                            onClick={() => setDeleteModal({...deleteModal, isOpen: false})}
                             className="w-full sm:flex-1 px-4 py-3 sm:py-2.5 border-2 border-slate-300 text-slate-600 font-bold rounded-xl hover:bg-slate-200 hover:text-slate-800 hover:border-slate-500 transition-all cursor-pointer"
                         >
                             Hủy

@@ -10,7 +10,7 @@ const ProcessDelete = ({ isOpen, processItem, onClose, onConfirm }) => {
                     <span className="block mt-2 text-sm text-red-500 font-medium">* Lưu ý: Hành động này không thể hoàn tác. Toàn bộ hình ảnh hướng dẫn và dữ liệu bên trong bước này cũng sẽ bị xóa vĩnh viễn.</span>
                 </p>
                 
-                {/* Action Buttons */}
+                {/* Action buttons */}
                 <div className="flex flex-col-reverse sm:flex-row gap-3 pt-4 border-t border-slate-100">
                     <button 
                         type="button"

@@ -10,7 +10,7 @@ const WorkflowDelete = ({ isOpen, workflow, onClose, onConfirm }) => {
                     <span className="block mt-2 text-sm text-red-500 font-medium">* Lưu ý: Hành động này không thể hoàn tác và toàn bộ các bước (process) con bên trong quy trình này cũng sẽ bị xóa sạch.</span>
                 </p>
                 
-                {/* Action Buttons */}
+                {/* Action buttons */}
                 <div className="flex flex-col-reverse sm:flex-row gap-3 pt-4 border-t border-slate-100">
                     <button 
                         type="button"

@@ -72,10 +72,10 @@ const CategoryForm = ({ onSuccess, onClose, showAlert }) => {
 
     return (
         <form ref={formRef} id="category-form" onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
-            {/* Title Field */}
+            {/* Title field */}
             <div>
                 <label className="block text-sm font-semibold text-slate-700 mb-1.5">Tên danh mục <span className="text-red-500">*</span></label>
-                {/* REASON: text-base on mobile prevents iOS Safari auto-zoom. sm:text-sm scales it back for desktop. py-3 makes the tap area larger on mobile. */}
+                {/* Styling adjustments */}
                 <input 
                     type="text" name="title" required value={formData.title} onChange={handleChange}
                     className="w-full px-4 py-3 sm:py-2.5 text-base sm:text-sm border border-slate-300 rounded-xl outline-none focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 bg-white text-slate-800 font-medium shadow-sm transition-all"

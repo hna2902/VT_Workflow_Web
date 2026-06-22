@@ -16,10 +16,10 @@ const AssetItemForm = ({ onSuccess, onClose, showAlert, categoryId, initialData 
             setTitle(initialData.title || '');
             setStatus(initialData.status || 'Active');
             if (initialData.image) {
-                // If the backend returns a relative URL, format it.
+                // Format relative URL
                 const imgUrl = initialData.image.startsWith('http') 
                     ? initialData.image 
-                    : `http://localhost:8000${initialData.image.startsWith('/') ? '' : '/'}${initialData.image}`;
+                    : `${initialData.image.startsWith('/') ? '' : '/'}${initialData.image}`;
                 setImagePreview(imgUrl);
             }
         }
@@ -59,18 +59,16 @@ const AssetItemForm = ({ onSuccess, onClose, showAlert, categoryId, initialData 
 
         try {
             if (initialData) {
-                await axiosClient.put(`processes/items/${initialData.id}/`, payload, {
-                    headers: { 'Content-Type': 'multipart/form-data' }
-                });
+                await axiosClient.put(`processes/items/${initialData.id}/`, payload);
             } else {
-                await axiosClient.post('processes/items/', payload, {
-                    headers: { 'Content-Type': 'multipart/form-data' }
-                });
+                await axiosClient.post('processes/items/', payload);
             }
             onSuccess(); 
         } catch (err) {
             console.error("Lỗi khi lưu tài sản:", err);
-            const errorMessage = err.response?.data?.title?.[0] || err.response?.data?.error || "Vui lòng kiểm tra lại dữ liệu nhập vào!";
+            const data = err.response?.data;
+            alert("Chi tiết lỗi từ Backend: " + JSON.stringify(data));
+            const errorMessage = data?.title?.[0] || data?.error || "Vui lòng kiểm tra lại dữ liệu nhập vào!";
             showAlert("Lưu thất bại", errorMessage, "error");
         }
     };

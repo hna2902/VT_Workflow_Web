@@ -21,7 +21,7 @@ import {
 const Information = () => {
     
     const role = getUserStorage('user_role', 'User');
-    const username = getUserStorage('user_name', 'username');
+    const username = getUserStorage('user_username', 'username');
     const fileInputRef = useRef(null);
     const createdAt = getUserStorage('user_created_at', 'Mới đây');
     
@@ -31,11 +31,11 @@ const Information = () => {
     const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
     const [isLeader, setIsLeader] = useState(false);
     const userId = getUserStorage('user_id', null);
-    // Name State
+    // Name state
     const [name, setName] = useState(getUserStorage('user_name', 'Người dùng'));
     const [isEditingName, setIsEditingName] = useState(false);
     const [tempName, setTempName] = useState('');
-    // Email State
+    // Email state
     const [email, setEmail] = useState(getUserStorage('user_email', 'Chưa cập nhật email'));
     const [isEditingEmail, setIsEditingEmail] = useState(false);
     const [tempEmail, setTempEmail] = useState('');
@@ -51,7 +51,7 @@ const Information = () => {
         const file = event.target.files[0];
         if (!file) return;
         
-        // Validate định dạng và dung lượng
+        // Format validation
         if (!file.type.startsWith('image/')) {
             showAlert("Thất bại", "Vui lòng chọn đúng định dạng", "error");
             return;
@@ -74,7 +74,7 @@ const Information = () => {
             });
             
             const avatarPath = response.data.avatar;
-            const serverAvatarUrl = avatarPath.startsWith('http') ? avatarPath : `http://localhost:8000${avatarPath}`;
+            const serverAvatarUrl = avatarPath.startsWith('http') ? avatarPath : `${avatarPath}`;
             
             setAvatar(serverAvatarUrl);
             setUserStorage('user_avatar', serverAvatarUrl);
@@ -221,14 +221,14 @@ const Information = () => {
                                     alt="User Avatar" 
                                     className="w-28 h-28 sm:w-32 sm:h-32 object-cover rounded-full bg-slate-100 group-hover:opacity-90 transition-opacity"
                                 />
-                                {/* Camera Button */}
+                                {/* Camera button */}
                                 <button className="absolute bottom-1 right-1 p-2.5 sm:p-3 bg-white rounded-full shadow-lg border border-slate-100 text-blue-600 hover:scale-110 hover:bg-blue-50 transition-all active:scale-95 cursor-pointer">
                                     <FaCamera size={16} />
                                 </button>
                             </div>
                         </div>
                         {isEditingName ? (
-                        // REASON: Edit Mode - Shows an input field with Save and Cancel buttons
+                        // Edit mode
                         <div className="flex items-center justify-center gap-2 px-4 mt-2 w-full">
                             <input 
                                 type="text"
@@ -245,7 +245,7 @@ const Information = () => {
                             </button>
                         </div>
                         ) : (
-                            // View Mode - Shows normal text and Pen icon
+                            // View mode
                             <div className="flex items-center justify-center gap-2 px-4 mt-2">
                                 <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 text-center break-all">{name}</h2>
                                 <button 
@@ -257,7 +257,7 @@ const Information = () => {
                             </div>
                         )}
                         <p className="text-slate-400 font-semibold text-sm sm:text-base mt-0.5 break-all">@{username}</p>
-                        {/* REASON: Render different colors and texts based on Role priority (Admin > Leader > User) */}
+                        {/* Render role colors */}
                         <div className={`mt-4 px-4 sm:px-5 py-1 sm:py-1.5 rounded-full inline-block shadow-sm ${
                             role === 'Admin' ? 'bg-red-100 text-red-700' : 
                             isLeader ? 'bg-purple-100 text-purple-700' : 
@@ -274,7 +274,6 @@ const Information = () => {
                             <InfoCard 
                                 icon={FaAt} label="Địa chỉ Email"
                                 color={{bg: "bg-blue-50", text: "text-blue-600"}}
-                                // Nếu đang edit thì hiện ô Input, ngược lại hiện text bình thường
                                 value={
                                     isEditingEmail ? (
                                         <input 
@@ -290,7 +289,7 @@ const Information = () => {
                                 }
                                 actionElement={
                                     isEditingEmail ? (
-                                        // REASON: Action buttons for Edit Mode (Save / Cancel)
+                                        // Action buttons
                                         <div className="flex gap-1">
                                             <button onClick={handleUpdateEmailInline} className="p-1.5 text-white bg-green-500 hover:bg-green-600 rounded-full shadow-sm active:scale-95 transition-all">
                                                 <FaCheck size={12} />
@@ -300,7 +299,7 @@ const Information = () => {
                                             </button>
                                         </div>
                                     ) : (
-                                        // Action button for View Mode (Pen icon)
+                                        // View mode actions
                                         <button 
                                             onClick={() => { setTempEmail(email); setIsEditingEmail(true); }}
                                             className="p-2 text-slate-300 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-all cursor-pointer"
@@ -337,7 +336,7 @@ const Information = () => {
                                         <button 
                                             onClick={handleToggleNotif}
                                             className="relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none cursor-pointer"
-                                            style={{ backgroundColor: isNotifEnabled ? '#3b82f6' : '#cbd5e1' }} // Xanh blue-500 hoặc xám slate-300
+                                            style={{ backgroundColor: isNotifEnabled ? '#3b82f6' : '#cbd5e1' }} // Blue-500 or slate-300
                                         >
                                             <span 
                                                 className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform shadow-sm ${
@@ -360,7 +359,7 @@ const Information = () => {
                                 </div>        
                             </div>
                             <button 
-                                onClick={() => setIsPasswordModalOpen(true)} // Mở Modal Password
+                                onClick={() => setIsPasswordModalOpen(true)}
                                 className="flex-1 px-4 py-2.5 bg-blue-500 text-white font-bold rounded-xl shadow-sm hover:bg-blue-700 hover:shadow-md active:scale-95 transition-all cursor-pointer"
                             >
                                 Đổi mật khẩu
@@ -412,7 +411,7 @@ const Information = () => {
                 ref={fileInputRef} 
                 onChange={handleFileChange} 
                 accept="image/*" 
-                className="hidden" // Dùng class hidden của Tailwind cho gọn
+                className="hidden"
             />
         </>
     );

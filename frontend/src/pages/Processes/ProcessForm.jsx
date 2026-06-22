@@ -35,9 +35,7 @@ const ProcessForm = ({ onSuccess, onClose, showAlert, workflowId }) => {
         });
 
         try {
-            await axiosClient.post('processes/process/', formData, {
-                headers: { 'Content-Type': 'multipart/form-data' }
-            });
+            await axiosClient.post('processes/process/', formData);
             onSuccess(); 
         } catch (err) {
             console.error("Django Error:", err.response?.data);
@@ -97,7 +95,7 @@ const ProcessForm = ({ onSuccess, onClose, showAlert, workflowId }) => {
                 </div>
 
                 <div>
-                    <label className="block text-sm font-semibold text-slate-700 mb-1.5">File đính kèm (Ảnh, Video, Tài liệu...) <span className="text-red-500">*</span></label>
+                    <label className="block text-sm font-semibold text-slate-700 mb-1.5">File đính kèm (Ảnh, Video, Tài liệu...) <span className="text-slate-400 font-normal italic">(Không bắt buộc)</span></label>
                     <div 
                         onClick={() => fileInputRef.current.click()}
                         className="border-2 border-dashed border-slate-300 rounded-xl px-4 py-5 text-center cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition-colors bg-white shadow-sm flex flex-col items-center"
@@ -118,10 +116,9 @@ const ProcessForm = ({ onSuccess, onClose, showAlert, workflowId }) => {
                         onChange={handleFileChange}
                         accept="*/*"
                         className="hidden"
-                        required={selectedFiles.length === 0}
                     />
 
-                    {/* Preview Files */}
+                    {/* File previews */}
                     {selectedFiles.length > 0 && (
                         <div className="grid grid-cols-4 gap-2 mt-3">
                             {selectedFiles.map((file, index) => {

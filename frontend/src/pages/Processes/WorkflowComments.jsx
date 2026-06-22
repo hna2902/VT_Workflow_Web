@@ -12,6 +12,8 @@ const WorkflowComments = ({ workflowId, onCountChange }) => {
     const [editingCommentId, setEditingCommentId] = useState(null);
     const [editContent, setEditContent] = useState('');
     const [editSelectedFiles, setEditSelectedFiles] = useState([]);
+    const [editExistingImages, setEditExistingImages] = useState([]);
+    const [editDeletedImageIds, setEditDeletedImageIds] = useState([]);
     const [deletingCommentId, setDeletingCommentId] = useState(null);
     const messagesEndRef = useRef(null);
     const fileInputRef = useRef(null);
@@ -19,7 +21,7 @@ const WorkflowComments = ({ workflowId, onCountChange }) => {
     const currentUserUsername = localStorage.getItem('user_username') || sessionStorage.getItem('user_username');
     const currentUserRole = localStorage.getItem('user_role') || sessionStorage.getItem('user_role');
 
-    // Notify parent of comment count changes
+    // Notify count changes
     useEffect(() => {
         if (onCountChange) {
             onCountChange(comments.length);
@@ -29,7 +31,7 @@ const WorkflowComments = ({ workflowId, onCountChange }) => {
     const renderFileUrl = (fileUrl) => {
         if (!fileUrl) return null;
         if (fileUrl.startsWith('http')) return fileUrl; 
-        let baseURL = axiosClient.defaults.baseURL || 'http://localhost:8000';
+        let baseURL = axiosClient.defaults.baseURL;
         baseURL = baseURL.replace(/\/api\/?$/, ''); 
         return `${baseURL}${fileUrl.startsWith('/') ? fileUrl : '/' + fileUrl}`;
     };
@@ -55,7 +57,7 @@ const WorkflowComments = ({ workflowId, onCountChange }) => {
     const fetchComments = async () => {
         try {
             const res = await axiosClient.get(`comments/comments/?workflow=${workflowId}`);
-            setComments(res.data.reverse()); // Reverse to show oldest first if API returns newest first
+            setComments(res.data.reverse());
             setLoading(false);
             scrollToBottom();
         } catch (error) {
@@ -113,12 +115,18 @@ const WorkflowComments = ({ workflowId, onCountChange }) => {
     };
 
     const handleEditComment = async (commentId) => {
-        if (!editContent.trim() && editSelectedFiles.length === 0) return;
+        if (!editContent.trim() && editSelectedFiles.length === 0 && editExistingImages.length === 0) {
+            alert("Bình luận không được để trống!");
+            return;
+        }
         try {
             const formData = new FormData();
             formData.append('content', editContent || 'Đã gửi hình ảnh');
             editSelectedFiles.forEach(file => {
                 formData.append('images[]', file);
+            });
+            editDeletedImageIds.forEach(id => {
+                formData.append('deleted_images[]', id);
             });
             const res = await axiosClient.patch(`comments/comments/${commentId}/`, formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
@@ -127,6 +135,8 @@ const WorkflowComments = ({ workflowId, onCountChange }) => {
             setEditingCommentId(null);
             setEditContent('');
             setEditSelectedFiles([]);
+            setEditExistingImages([]);
+            setEditDeletedImageIds([]);
         } catch (error) {
             console.error("Failed to edit comment:", error);
             alert("Lỗi khi sửa bình luận!");
@@ -135,7 +145,7 @@ const WorkflowComments = ({ workflowId, onCountChange }) => {
 
     return (
         <div className="flex flex-col h-full bg-white border-l border-slate-200">
-            {/* MESSAGE LIST */}
+            {/* Message list */}
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
                 {loading ? (
                     <div className="text-center text-slate-500 text-sm py-4">Đang tải bình luận...</div>
@@ -161,11 +171,17 @@ const WorkflowComments = ({ workflowId, onCountChange }) => {
                                         {new Date(comment.create_at).toLocaleString('vi-VN')}
                                     </span>
                                     
-                                    {/* Action Menu: Delete/Edit */}
+                                    {/* Action menu */}
                                     {(comment.user_username === currentUserUsername || currentUserRole === 'Admin') && (
                                         <div className="opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity flex items-center gap-1.5 ml-1">
                                             {comment.user_username === currentUserUsername && (
-                                                <button onClick={() => { setEditingCommentId(comment.id); setEditContent(comment.content); setEditSelectedFiles([]); }} className="text-[10px] font-bold text-slate-400 hover:text-blue-600 hover:underline transition-colors" title="Sửa bình luận">Sửa</button>
+                                                <button onClick={() => { 
+                                                    setEditingCommentId(comment.id); 
+                                                    setEditContent(comment.content); 
+                                                    setEditSelectedFiles([]); 
+                                                    setEditExistingImages(comment.images || []);
+                                                    setEditDeletedImageIds([]);
+                                                }} className="text-[10px] font-bold text-slate-400 hover:text-blue-600 hover:underline transition-colors" title="Sửa bình luận">Sửa</button>
                                             )}
                                             <button onClick={() => setDeletingCommentId(comment.id)} className="text-[10px] font-bold text-slate-400 hover:text-red-600 hover:underline transition-colors" title="Xóa bình luận">Xóa</button>
                                         </div>
@@ -179,7 +195,38 @@ const WorkflowComments = ({ workflowId, onCountChange }) => {
                                                 onChange={(e) => setEditContent(e.target.value)}
                                                 className="w-full px-2 py-1.5 text-sm border border-blue-200 rounded-lg outline-none min-h-[60px] focus:ring-2 focus:ring-blue-100"
                                             />
-                                            {/* Preview Selected Files for Edit */}
+                                            {/* Edit previews */}
+                                            {editExistingImages.length > 0 && (
+                                                <div className="flex gap-2 mb-2 overflow-x-auto pb-2">
+                                                    {editExistingImages.map((img) => {
+                                                        const fileUrl = renderFileUrl(img.img_url);
+                                                        const isVideoFile = isVideo(img.img_url);
+                                                        const isImageFile = isImage(img.img_url);
+                                                        return (
+                                                            <div key={img.id} className="relative w-12 h-12 shrink-0 rounded-lg overflow-hidden border border-slate-200 group bg-slate-50 flex items-center justify-center">
+                                                                {isImageFile ? (
+                                                                    <img src={fileUrl} alt="Preview" className="w-full h-full object-cover" />
+                                                                ) : isVideoFile ? (
+                                                                    <video src={fileUrl} className="w-full h-full object-cover" />
+                                                                ) : (
+                                                                    <FaFile className="text-slate-400 text-lg" />
+                                                                )}
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => {
+                                                                        setEditExistingImages(prev => prev.filter(i => i.id !== img.id));
+                                                                        setEditDeletedImageIds(prev => [...prev, img.id]);
+                                                                    }}
+                                                                    className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                                                                >
+                                                                    <FaTimes className="text-white text-xs" />
+                                                                </button>
+                                                            </div>
+                                                        );
+                                                    })}
+                                                </div>
+                                            )}
+                                            {/* File previews */}
                                             {editSelectedFiles.length > 0 && (
                                                 <div className="flex gap-2 mb-2 overflow-x-auto pb-2">
                                                     {editSelectedFiles.map((file, index) => {
@@ -235,7 +282,6 @@ const WorkflowComments = ({ workflowId, onCountChange }) => {
                                         <>
                                             {comment.content}
                                             
-                                            {/* (Actions moved to header) */}
                                             {comment.images && comment.images.length > 0 && (
                                                 <div className="grid grid-cols-2 gap-2 mt-2">
                                                     {comment.images.map((img, idx) => {
@@ -275,9 +321,9 @@ const WorkflowComments = ({ workflowId, onCountChange }) => {
                 <div ref={messagesEndRef} />
             </div>
 
-            {/* INPUT AREA */}
+            {/* Input area */}
             <div className="p-3 bg-white border-t border-slate-200 shrink-0">
-                {/* Preview Selected Files */}
+                {/* File previews */}
                 {selectedFiles.length > 0 && (
                     <div className="flex gap-2 mb-2 overflow-x-auto pb-2">
                         {selectedFiles.map((file, index) => {
@@ -350,7 +396,7 @@ const WorkflowComments = ({ workflowId, onCountChange }) => {
                 </form>
             </div>
 
-            {/* Delete Confirmation Modal */}
+            {/* Delete confirmation modal */}
             <Modal 
                 isOpen={!!deletingCommentId} 
                 onClose={() => setDeletingCommentId(null)}

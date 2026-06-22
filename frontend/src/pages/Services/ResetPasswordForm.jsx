@@ -101,7 +101,6 @@ const ResetPasswordForm = () => {
 
                     <form onSubmit={handleReset} className="space-y-5">
                         
-                        {/* New Password */}
                         <div className="relative">
                             <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-slate-400">
                                 <FaLock />
@@ -112,7 +111,6 @@ const ResetPasswordForm = () => {
                             />
                         </div>
 
-                        {/* Confirm Password */}
                         <div className="relative">
                             <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-slate-400">
                                 <FaLock />
@@ -137,7 +135,6 @@ const ResetPasswordForm = () => {
                         </Link>
                     </div>
 
-                    {/* Popup Modal */}
                     <Modal 
                         isOpen={isSuccessModalOpen} 
                         title="Đổi mật khẩu thành công"

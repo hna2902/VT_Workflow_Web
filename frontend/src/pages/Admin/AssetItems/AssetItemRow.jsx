@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom'; // 1. Bổ sung useNavigate
+import { useNavigate } from 'react-router-dom';
 import { FaImage } from 'react-icons/fa';
 
-const AssetItemRow = ({ item, onSave, onDelete }) => {
-    const navigate = useNavigate(); // 2. Khởi tạo navigate
+const AssetItemRow = ({ item, onSave, onEdit, onDelete }) => {
+    const navigate = useNavigate();
 
     const [isEditing, setIsEditing] = useState(false);
     const [localTitle, setLocalTitle] = useState(item.title);
@@ -12,13 +12,17 @@ const AssetItemRow = ({ item, onSave, onDelete }) => {
     const getImageUrl = (path) => {
         if (!path) return null;
         if (path.startsWith('http')) return path;
-        return `http://localhost:8000${path.startsWith('/') ? '' : '/'}${path}`;
+        return `${path.startsWith('/') ? '' : '/'}${path}`;
     };
 
     const handleEditClick = () => {
-        setIsEditing(true);
-        setLocalTitle(item.title);
-        setLocalStatus(item.status);
+        if (onEdit) {
+            onEdit(item);
+        } else {
+            setIsEditing(true);
+            setLocalTitle(item.title);
+            setLocalStatus(item.status);
+        }
     };
 
     const handleCancelClick = () => {
@@ -28,14 +32,14 @@ const AssetItemRow = ({ item, onSave, onDelete }) => {
     };
 
     const handleSaveClick = () => {
-        onSave(item.id, { title: localTitle, status: localStatus });
+        onSave(item.id, { title: localTitle, status: localStatus, category: item.category });
         setIsEditing(false);
     };
 
     return (
         <div className="flex flex-col sm:flex-row sm:items-start justify-between p-4 transition-colors bg-white border border-l-4 border-slate-300 border-l-blue-500 rounded shadow-sm hover:bg-slate-50 gap-4 sm:gap-6">
             
-            {/* Cột Ảnh thu nhỏ */}
+            {/* Thumbnail column */}
             <div className="w-16 h-16 rounded-lg overflow-hidden border border-slate-200 bg-slate-100 shrink-0 flex items-center justify-center">
                 {item.image ? (
                     <img src={getImageUrl(item.image)} alt={item.title} className="w-full h-full object-cover" />
@@ -74,7 +78,7 @@ const AssetItemRow = ({ item, onSave, onDelete }) => {
                 ) : (
                     <div className="mt-1">
                         <h3 
-                            onClick={() => navigate(`/admin/assets/${item.id}/workflows`)} // Đổi URL này cho khớp với Route bạn đã cấu hình bên App.jsx nhé!
+                            onClick={() => navigate(`/admin/assets/${item.id}/workflows`)} // Update URL
                             className="text-lg font-bold text-blue-600 hover:text-blue-800 hover:underline cursor-pointer break-words w-fit transition-colors"
                         >
                             {item.title}

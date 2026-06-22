@@ -14,7 +14,7 @@ const Sidebar = () => {
     useEffect(() => {
         const fetchCategories = async () => {
             try {
-                // axiosClient handles baseURL ('api/') and Authorization headers via interceptors
+                // API request
                 const response = await axiosClient.get('processes/categories/');
                 
                 setCategories(response.data);
@@ -33,8 +33,8 @@ const Sidebar = () => {
     );
 
     const visibleCategories = filteredCategories.filter(cat => {
-        if (currentUserRole === 'Admin') return true; // Admin thấy hết
-        return cat.status !== 'Inactive'; // User chỉ thấy Active
+        if (currentUserRole === 'Admin') return true; // Admin sees all
+        return cat.status !== 'Inactive'; // User sees active only
     });
 
     const handleLinkClick = () => {
@@ -45,7 +45,7 @@ const Sidebar = () => {
 
     return (
         <>
-            {/* Nút toggle cho mobile - Dạng tab bên mép trái */}
+            {/* Mobile toggle */}
             <button 
                 onClick={() => setIsOpen(!isOpen)}
                 className={`md:hidden fixed top-1/2 -translate-y-1/2 z-50 flex items-center justify-center w-8 h-16 text-xl font-bold text-white bg-blue-600 shadow-[4px_0_10px_rgba(0,0,0,0.1)] hover:bg-blue-700 transition-all duration-300 rounded-r-xl ${isOpen ? 'left-72' : 'left-0'}`}
@@ -84,7 +84,7 @@ const Sidebar = () => {
                         <ul className="py-2">
                             {visibleCategories.length > 0 ? (
                                 visibleCategories.map((cat) => {
-                                    // ĐÂY LÀ CHỖ RẼ NHÁNH: Check Role để ra đường dẫn tương ứng
+                                    // Determine route
                                     const destinationUrl = currentUserRole === 'Admin' 
                                         ? `/admin/categories/${cat.id}/assets` 
                                         : `/categories/${cat.id}/assets`;
@@ -92,7 +92,7 @@ const Sidebar = () => {
                                     return (
                                         <li key={cat.id}>
                                             <NavLink
-                                                to={destinationUrl} // SỬA CHỖ NÀY: Truyền biến vừa tạo vào đây
+                                                to={destinationUrl} // Pass created variable
                                                 onClick={handleLinkClick}
                                                 className={({ isActive }) => 
                                                     `block px-6 py-3.5 transition-colors ${
@@ -102,7 +102,7 @@ const Sidebar = () => {
                                                     } ${cat.status === 'Inactive' ? 'opacity-70 italic' : ''}` 
                                                 }
                                             >
-                                                {/* HIỂN THỊ CHỮ (ẨN) CHO ADMIN */}
+                                                {/* Show hidden label */}
                                                 {cat.title} {currentUserRole === 'Admin' && cat.status === 'Inactive' && (
                                                     <span className="text-red-500 text-xs ml-1 font-bold">(ẩn)</span>
                                                 )}
@@ -122,7 +122,7 @@ const Sidebar = () => {
                 {currentUserRole === 'Admin' && (
                     <div className="p-4 border-t border-slate-300 bg-slate-200 shrink-0">
                         <Link 
-                            to="/admin/categories/manage" // Tùy chỉnh URL quản lý của bạn
+                            to="/admin/categories/manage" // Manage URL
                             onClick={handleLinkClick}
                             className="flex items-center justify-center w-full px-4 py-3 text-sm font-bold text-white transition-colors bg-slate-700 rounded-lg shadow-sm hover:bg-slate-800 active:bg-slate-900"
                         >
