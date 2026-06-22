@@ -16,7 +16,6 @@ class AssetItemSerializer(serializers.ModelSerializer):
         model = AssetItem
         fields = '__all__'
         read_only_fields = ['create_at']
-    # string value of the 'title' field into this method. Now, `value.strip()` will work perfectly.
     def validate_title(self, value):
         if not value.strip():
             raise serializers.ValidationError("Asset title cannot be empty")

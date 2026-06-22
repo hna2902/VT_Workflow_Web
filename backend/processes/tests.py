@@ -82,7 +82,6 @@ class AssetItemTests(BaseProcessTestCase):
         self.client.force_authenticate(user=self.normal_user)
         url = reverse('item-list')
         response = self.client.post(url, {'category': self.category.pk, 'title': 'New Item'})
-        # Depending on permissions, usually non-leader cannot create
         self.assertIn(response.status_code, [status.HTTP_403_FORBIDDEN, status.HTTP_400_BAD_REQUEST])
 
 class WorkflowTests(BaseProcessTestCase):

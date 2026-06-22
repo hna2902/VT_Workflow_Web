@@ -133,7 +133,7 @@ class PasswordResetTests(BaseUserTestCase):
 
     def test_password_reset_request_invalid_email(self):
         url = reverse('password_reset')
-        # Even if email doesn't exist, it should return 200 to prevent user enumeration
+        # Prevent user enumeration
         response = self.client.post(url, {'email': 'notexist@example.com'})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(mail.outbox), 0)
@@ -170,7 +170,7 @@ class AdminUserTests(BaseUserTestCase):
         url = reverse('user-list')
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        # Should contain testuser but not adminuser
+        # Verify user list
         self.assertTrue(any(u['username'] == 'testuser' for u in response.data))
         self.assertFalse(any(u['username'] == 'adminuser' for u in response.data))
 
@@ -191,5 +191,5 @@ class AdminUserTests(BaseUserTestCase):
         self.client.force_authenticate(user=self.admin)
         url = reverse('admin-update-user', kwargs={'pk': self.admin.pk})
         response = self.client.delete(url)
-        # Cannot delete superuser/oneself
+        # Prevent superuser deletion
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)

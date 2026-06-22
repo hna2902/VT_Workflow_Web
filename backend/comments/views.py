@@ -5,7 +5,6 @@ from rest_framework.permissions import IsAuthenticated
 from .models import Comment, CommentImage
 from .serializers import CommentSerializer, CommentImageSerializer
 
-# Create your views here.
 class CommentViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
     queryset = Comment.objects.all()
@@ -22,7 +21,7 @@ class CommentViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         comment = serializer.save(user=self.request.user)
         
-        # Send Notification
+        # Send notification
         try:
             from django.contrib.auth import get_user_model
             from notifications.models import Notification
@@ -32,15 +31,27 @@ class CommentViewSet(viewsets.ModelViewSet):
             sender_name = self.request.user.name or self.request.user.username
             message = f"{sender_name} đã bình luận trong quy trình '{workflow.name}'"
             
-            # Notify all users who have notif_enabled=True
+            # Notify opted-in users
             users_to_notify = set(User.objects.filter(notif_enabled=True))
             
-            # Remove the person who made the comment
+            # Exclude author
             if self.request.user in users_to_notify:
                 users_to_notify.remove(self.request.user)
                 
+            from channels.layers import get_channel_layer
+            from asgiref.sync import async_to_sync
+            
+            channel_layer = get_channel_layer()
             for u in users_to_notify:
                 Notification.objects.create(user=u, message=message)
+                if channel_layer:
+                    async_to_sync(channel_layer.group_send)(
+                        f"user_{u.id}",
+                        {
+                            "type": "send_notification",
+                            "message": message
+                        }
+                    )
         except Exception as e:
             print("Failed to send notification:", e)
 
@@ -56,7 +67,7 @@ class CommentViewSet(viewsets.ModelViewSet):
             if images:
                 for image in images:
                     CommentImage.objects.create(comment=comment, img_url=image)
-                # Re-serialize to include the new images in the response
+                # Re-serialize with images
                 from rest_framework.response import Response
                 from rest_framework import status
                 serializer = self.get_serializer(comment)
@@ -70,6 +81,10 @@ class CommentViewSet(viewsets.ModelViewSet):
             raise PermissionDenied("Bạn không có quyền sửa bình luận này.")
         
         response = super().update(request, *args, **kwargs)
+        
+        deleted_image_ids = request.data.getlist('deleted_images[]')
+        if deleted_image_ids:
+            CommentImage.objects.filter(id__in=deleted_image_ids, comment=comment).delete()
         
         images = request.FILES.getlist('images[]')
         if not images:
@@ -91,6 +106,10 @@ class CommentViewSet(viewsets.ModelViewSet):
             raise PermissionDenied("Bạn không có quyền sửa bình luận này.")
             
         response = super().partial_update(request, *args, **kwargs)
+        
+        deleted_image_ids = request.data.getlist('deleted_images[]')
+        if deleted_image_ids:
+            CommentImage.objects.filter(id__in=deleted_image_ids, comment=comment).delete()
         
         images = request.FILES.getlist('images[]')
         if not images:

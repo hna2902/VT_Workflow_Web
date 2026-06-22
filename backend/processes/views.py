@@ -8,9 +8,9 @@ from .permissions import IsAdminOrCategoryLeader
 
 
 class CategoryViewSet(viewsets.ModelViewSet):
-    # 1. Define the data source
+    # Queryset
     queryset = Category.objects.all()
-    # 2. Define the translator
+    # Serializer class
     serializer_class = CategorySerializer
     def get_permissions(self):
         if self.action in ['create', 'update', 'partial_update', 'destroy']:
@@ -20,19 +20,27 @@ class CategoryViewSet(viewsets.ModelViewSet):
 class AssetItemViewSet(viewsets.ModelViewSet):
     queryset = AssetItem.objects.all()
     serializer_class = AssetItemSerializer
+    parser_classes = [MultiPartParser, FormParser, JSONParser]
     def get_queryset(self):
-        # 1. Get the base list of all assets
+        # Get base queryset
         queryset = super().get_queryset()
-        # 2. Extract the 'category' parameter from the URL (if it exists)
+        # Extract category param
         category_id = self.request.query_params.get('category')
-        # 3. If a category ID was provided, filter the list before returning it
+        # Filter by category
         if category_id:
             queryset = queryset.filter(category_id=category_id)
         return queryset
     def get_permissions(self):
         if self.action in ['create', 'update', 'partial_update', 'destroy']:
-            return [IsAdminUser()]
+            return [IsAdminOrCategoryLeader()]
         return [IsAuthenticated()]
+
+    def create(self, request, *args, **kwargs):
+        print("====== POST DATA ======", request.data)
+        serializer = self.get_serializer(data=request.data)
+        if not serializer.is_valid():
+            print("====== VALIDATION ERROR ======", serializer.errors)
+        return super().create(request, *args, **kwargs)
     
 class WorkflowViewSet(viewsets.ModelViewSet):
     queryset = Workflow.objects.all()
@@ -45,10 +53,8 @@ class WorkflowViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(item_id=item_id)
         return queryset
     def get_permissions(self):
-        # Global admins can create, but category leaders can update/delete their own workflows
-        if self.action == 'create':
-            return [IsAdminUser()] 
-        elif self.action in ['update', 'partial_update', 'destroy']:
+        # Admin/Leader permissions
+        if self.action in ['create', 'update', 'partial_update', 'destroy']:
             return [IsAdminOrCategoryLeader()]
         return [IsAuthenticated()]
 
@@ -66,7 +72,7 @@ class WorkflowViewSet(viewsets.ModelViewSet):
         if workflow_id:
             workflow = Workflow.objects.get(id=workflow_id)
             self._save_workflow_files(workflow, request)
-            # Tải lại dữ liệu để trả về danh sách file mới cập nhật
+            # Return updated data
             serializer = self.get_serializer(workflow)
             response.data = serializer.data
         return response
@@ -75,7 +81,7 @@ class WorkflowViewSet(viewsets.ModelViewSet):
         response = super().update(request, *args, **kwargs)
         workflow = self.get_object()
         self._save_workflow_files(workflow, request)
-        # Tải lại dữ liệu để trả về danh sách file mới cập nhật
+        # Return updated data
         serializer = self.get_serializer(workflow)
         response.data = serializer.data
         return response
@@ -93,7 +99,7 @@ class WorkflowFileViewSet(viewsets.ModelViewSet):
 class ProcessViewSet(viewsets.ModelViewSet):
     queryset = Process.objects.all()
     serializer_class = ProcessSerializer
-    # FIX NGẦM 1: Thêm Parser để Backend đọc được formData (chữ + hình) từ Frontend gửi lên
+    # Parse multipart data
     parser_classes = [MultiPartParser, FormParser, JSONParser] 
 
     def get_queryset(self):
@@ -104,7 +110,7 @@ class ProcessViewSet(viewsets.ModelViewSet):
         return queryset
 
     def get_permissions(self):
-        # FIX TRÍ MẠNG: Gộp chung quyền tạo (create) và sửa/xóa cho ông Admin/Leader
+        # Admin/Leader permissions
         if self.action in ['create', 'update', 'partial_update', 'destroy']:
             return [IsAdminOrCategoryLeader()]
         return [IsAuthenticated()]
@@ -125,7 +131,7 @@ class ProcessImageViewSet(viewsets.ModelViewSet):
     serializer_class = ProcessImageSerializer
     parser_classes = [MultiPartParser, FormParser, JSONParser]
 
-    # FIX NGẦM 2: Phải có chữ "s" (get_permissions) thì Django mới hiểu!
+    # Override permissions
     def get_permissions(self):
         if self.action in ['create', 'update', 'partial_update', 'destroy']:
             return [IsAdminOrCategoryLeader()]

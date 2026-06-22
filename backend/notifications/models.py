@@ -1,8 +1,7 @@
 from django.db import models
 from django.conf import settings
 
-# Notification table
-# System alerts emitted to users regarding new comments or changes
+# Notification model
 class Notification(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='notifications')
     message = models.CharField(max_length=500)

@@ -45,7 +45,7 @@ class CommentTests(BaseCommentTestCase):
         })
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Comment.objects.count(), 2)
-        # Ensure user is set automatically
+        # Check user auto-assignment
         self.assertEqual(Comment.objects.get(content='New comment').user, self.user2)
 
     def test_edit_own_comment(self):

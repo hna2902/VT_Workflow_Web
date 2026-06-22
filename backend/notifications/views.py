@@ -11,7 +11,7 @@ class NotificationViewSet(viewsets.ModelViewSet):
     serializer_class = NotificationSerializer
     def get_queryset(self):
         queryset = super().get_queryset()
-        # Filter notifications for the current user only
+        # Filter by user
         queryset = queryset.filter(user=self.request.user)
         
         is_read = self.request.query_params.get('is_read')

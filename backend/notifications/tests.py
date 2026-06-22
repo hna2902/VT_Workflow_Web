@@ -37,7 +37,7 @@ class NotificationTestCase(TestCase):
         url = reverse('notification-list')
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        # Should only see their own notifications
+        # View own notifications
         self.assertEqual(len(response.data), 2)
 
     def test_filter_unread_notifications(self):

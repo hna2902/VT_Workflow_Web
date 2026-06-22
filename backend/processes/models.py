@@ -4,8 +4,7 @@ from django.db.models.signals import post_delete
 from django.dispatch import receiver
 from core import settings
 
-# Category table
-# High-level asset classifications managed exclusively by Admins
+# Category model
 class Category(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     title = models.CharField(max_length=255, unique=True)
@@ -16,13 +15,12 @@ class Category(models.Model):
     def __str__(self):
         return self.title
 
-# AssetItem table
-# Specific equipment or enterprise asset belonging to a Category
+# AssetItem model
 class AssetItem(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='items')
     title = models.CharField(max_length=50)
-    image = models.ImageField(upload_to='assets/images/', blank=True, null=True)
+    image = models.ImageField(upload_to='assets/images/', max_length=500, blank=True, null=True)
     status = models.CharField(max_length=50, default='Active')
     create_at = models.DateTimeField(auto_now_add=True)
 
@@ -35,8 +33,7 @@ def delete_asset_item_image(sender, instance, **kwargs):
     if instance.image:
         instance.image.delete(save=False)
     
-# Workflow table
-# Standalone maintenance or repair routines bound to an AssetItem
+# Workflow model
 class Workflow(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     item = models.ForeignKey(AssetItem, on_delete=models.CASCADE, related_name='workflow')
@@ -54,7 +51,7 @@ class WorkflowFile(models.Model):
         ('document', 'Document'),
     )
     workflow = models.ForeignKey(Workflow, on_delete=models.CASCADE, related_name='files')
-    file = models.FileField(upload_to='workflows/files/')
+    file = models.FileField(upload_to='workflows/files/', max_length=500)
     file_type = models.CharField(max_length=20, choices=FILE_TYPES)
     create_at = models.DateTimeField(auto_now_add=True)
 
@@ -67,8 +64,7 @@ def delete_workflow_file(sender, instance, **kwargs):
     if instance.file:
         instance.file.delete(save=False)
     
-# Process table
-# Detailed step-by-step procedures within an overarching Workflow
+# Process model
 class Process(models.Model):
     workflow = models.ForeignKey(Workflow, on_delete=models.CASCADE, related_name='process')
     name = models.CharField(max_length=255)
@@ -77,18 +73,17 @@ class Process(models.Model):
     create_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        # Enforces ascending order based on the step sequence number
+        # Ascending order by step
         ordering = ['step']
         unique_together = ['workflow', 'step']
 
     def __str__(self):
         return f"Step {self.step}: {self.name}"
     
-# ProcessImage table
-# Illustrative multimedia assets linked to a specific Process step
+# ProcessImage model
 class ProcessImage(models.Model):
     process = models.ForeignKey(Process, on_delete=models.CASCADE, related_name='processImg')
-    image_file = models.FileField(upload_to='processes/images/', null=True, blank=True)
+    image_file = models.FileField(upload_to='processes/images/', max_length=500, null=True, blank=True)
     caption = models.CharField(max_length=255, null=True, blank=True)
     create_at = models.DateTimeField(auto_now_add=True)
 

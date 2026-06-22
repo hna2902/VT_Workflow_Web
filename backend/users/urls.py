@@ -11,7 +11,8 @@ from .views import (
     ChangePasswordView, 
     UpdateAvatarView,
     UpdateNameView,
-    AdminUpdateUserView
+    AdminUpdateUserView,
+    VerifyPasswordView
 )
 
 urlpatterns = [
@@ -26,5 +27,6 @@ urlpatterns = [
     path('password-reset/', PasswordResetRequestView.as_view(), name='password_reset'),
     path('password-reset-confirm/', PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
     path('toggle-notif/', ToggleNotifView.as_view(), name='toggle-notif'),
+    path('verify-password/', VerifyPasswordView.as_view(), name='verify-password'),
     path('<uuid:pk>/', AdminUpdateUserView.as_view(), name='admin-update-user'),
 ]

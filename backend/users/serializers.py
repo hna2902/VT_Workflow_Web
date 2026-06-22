@@ -11,22 +11,21 @@ User = get_user_model()
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     def validate(self, attrs):
-        # Let SimpleJWT handle the core password validation and token generation
+        # Handle password validation
         data = super().validate(attrs)
-        # createsuperuser command leaves the custom 'role' field empty or default
+        # Admin role logic
         user_role = 'Admin' if self.user.is_superuser else self.user.role
         display_role = user_role
         if user_role != 'Admin':
-            # .exists() is highly optimized. It runs a lightweight SQL query (SELECT 1) 
-            # instead of loading the entire Category object into memory.
+            # Check leadership status
             is_leader = Category.objects.filter(leader=self.user).exists()
             if is_leader:
                 display_role = 'Team Leader'
-        # Fallback to username if name is not provided, avoiding empty strings on UI
+        # Fallback to username
         display_name = self.user.name if self.user.name else self.user.username
-        # Safely check if the avatar exists before calling .url to prevent Server 500 errors
+        # Safely check avatar
         avatar_url = self.user.avatar.url if self.user.avatar else None
-        # To save Frontend from doing Date parsing
+        # Format date
         created_at_str = self.user.create_at.strftime('%d/%m/%Y') if self.user.create_at else 'Mới đây'
         data['user'] = {
             'id': str(self.user.id),
@@ -49,12 +48,12 @@ class RegisterSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('id', 'username', 'name', 'password', 'email')
-        # Prevent returning the hashed password in the API response
+        # Hide hashed password
         extra_kwargs = {
             'password': {'write_only':True}
         }
     def create(self, validated_data):
-        # Use create_user to automatically hash the password securely
+        # Auto hash password
         user = User.objects.create_user(
             username=validated_data['username'],
             name=validated_data.get('name',''),
@@ -74,13 +73,11 @@ class SetNewPasswordSerializer(serializers.Serializer):
 
     def validate(self, attrs):
         try:
-            # Decode the user ID
             uid = force_str(urlsafe_base64_decode(attrs['uidb64']))
             user = User.objects.get(pk=uid)
         except (TypeError, ValueError, OverflowError, User.DoesNotExist):
             raise serializers.ValidationError("Invalid user ID.")
 
-        # Verify the token
         if not PasswordResetTokenGenerator().check_token(user, attrs['token']):
             raise serializers.ValidationError("The reset token is invalid or has expired.")
 

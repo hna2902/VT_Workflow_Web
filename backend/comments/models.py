@@ -1,6 +1,6 @@
 from django.db import models
 from django.conf import settings
-# Comment table
+# Comment model
 class Comment(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='comments')
     workflow = models.ForeignKey('processes.Workflow', on_delete=models.CASCADE, related_name='comments')
@@ -12,8 +12,7 @@ class Comment(models.Model):
     def __str__(self):
         return f"Comment by {self.user.username} on {self.workflow.name}"
     
-# CommentImg table
-# Using to store picture for comments
+# Comment image model
 class CommentImage(models.Model):
     comment = models.ForeignKey(Comment, on_delete=models.CASCADE, related_name='images')
     img_url = models.FileField(upload_to='comments/images/', max_length=1000)

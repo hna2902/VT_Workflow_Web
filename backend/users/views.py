@@ -1,3 +1,4 @@
+import os
 from django.conf import settings
 from rest_framework import generics
 from rest_framework.permissions import AllowAny
@@ -16,6 +17,7 @@ from rest_framework.parsers import MultiPartParser, FormParser
 from .serializers import PasswordResetRequestSerializer, RegisterSerializer, SetNewPasswordSerializer
 from processes.models import Category
 User = get_user_model()
+frontend_url = os.environ.get('FRONTEND_URL', 'http://localhost:8080')
 
 class UserListView(APIView):
     permission_classes = [IsAuthenticated]
@@ -32,7 +34,7 @@ class UserListView(APIView):
 
 class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
-    # Allow open registration for unauthenticated users
+    # Allow open registration
     permission_classes = (AllowAny,)
     serializer_class = RegisterSerializer
 
@@ -45,16 +47,15 @@ class PasswordResetRequestView(APIView):
             email = serializer.validated_data['email']
             user = User.objects.filter(email=email).first()
             if user:
-                # Generate a secure token and encoded user ID
+                # Generate secure token
                 uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
                 token = PasswordResetTokenGenerator().make_token(user)
-                # Link must point to the Frontend routing
-                reset_link = f"http://localhost:5173/reset_password?uid={uidb64}&token={token}"
+                # Link to frontend
+                reset_link = f"{frontend_url}?uid={uidb64}&token={token}"
                 
-                # REASON: Print directly to console for easy testing without dealing with MIME quoted-printable encoding
                 print(f"\n========== PASSWORD RESET REQUEST ==========\n{reset_link}\n==================================================\n")
                 
-                # Use settings.EMAIL_HOST_USER as the sender, fallback to noreply
+                # Set sender email
                 sender_email = settings.EMAIL_HOST_USER if settings.EMAIL_HOST_USER else "noreply@vtjsc.com"
                 
                 send_mail(
@@ -64,7 +65,7 @@ class PasswordResetRequestView(APIView):
                     recipient_list=[email],
                     fail_silently = False
                 )
-            # Always return success even if email doesn't exist
+            # Always return success
             return Response(
                 {"message": "A mail has been sent"},
                 status = status.HTTP_200_OK
@@ -80,7 +81,7 @@ class PasswordResetConfirmView(APIView):
             uid = force_str(urlsafe_base64_decode(serializer.validated_data['uidb64']))
             user = User.objects.get(pk=uid)
             
-            # Securely hash and save the new password
+            # Hash and save password
             user.set_password(serializer.validated_data['password'])
             user.save()
             
@@ -102,15 +103,13 @@ class ToggleNotifView(APIView):
         })
     
 class UpdateEmailView(APIView):
-    # Only logged-in users can access this endpoint.
     permission_classes = [IsAuthenticated]
 
     def patch(self, request):
         new_email = request.data.get('email')
-        # Basic validation to ensure the frontend sends the required data.
         if not new_email:
             return Response({"error": "Email is required"}, status=400)
-        # Check if any OTHER user (excluding current user) is using this email.
+        # Check email conflict
         if User.objects.filter(email=new_email).exclude(id=request.user.id).exists():
             return Response({"error": "Email này đã được sử dụng bởi một tài khoản khác!"}, status=400) 
         request.user.email = new_email
@@ -128,7 +127,7 @@ class ChangePasswordView(APIView):
         new_password = request.data.get('newPassword')
         if not user.check_password(current_password):
             return Response({"error": "Incorrect current password"}, status=400)
-        # set_password() handles the hashing securely.
+        # Hash and save password
         user.set_password(new_password)
         user.save()
         return Response({"message": "Password changed successfully"})
@@ -153,7 +152,7 @@ class UpdateNameView(APIView):
     def patch(self, request):
         new_name = request.data.get('name')
         
-        # REASON: Validate to prevent empty names or names with only spaces
+        # Validate non-empty name
         if not new_name or len(new_name.strip()) == 0:
             return Response({"error": "Tên không được để trống"}, status=400)
             
