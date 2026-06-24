@@ -58,3 +58,24 @@ docker exec -it workflow_backend python manage.py createsuperuser
 **4. Access the Application**
 - **Web App:** `http://localhost:8080` (or your configured IP/domain)
 - **pgAdmin:** `http://localhost:5050`
+
+## Disaster Recovery & Backups
+The system is equipped with an automated backup service (`workflow_pgbackup`) to prevent data loss in case of severe server failures.
+
+**How it works:**
+- Automatically executes a full database dump every day at midnight (`@daily`).
+- Safely stores the `.sql` backup files in the `db_backups/` directory on the host machine.
+- Automatically prunes backups older than 7 days to optimize disk space.
+
+**Restoring from a Backup:**
+In the event of a total server crash, copy your source code and the `db_backups` folder to the new server, then execute:
+```bash
+# 1. Start the database service only
+docker compose up -d db
+
+# 2. Restore the database from your latest backup file (update filename accordingly)
+docker exec -i workflow_postgres psql -U admin -d vt_workflow < ./db_backups/backup_YYYY-MM-DD.sql
+
+# 3. Start the remaining services
+docker compose up -d
+```

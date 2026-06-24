@@ -66,6 +66,23 @@ services:
     volumes:
       - media_data:/app/media
 
+  # 4. Automated Database Backup Service
+  pgbackups:
+    image: prodrigestivill/postgres-backup-local
+    container_name: workflow_pgbackup
+    restart: always
+    environment:
+      - POSTGRES_HOST=db
+      - POSTGRES_DB=${DB_NAME}
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - SCHEDULE=@daily
+      - BACKUP_KEEP_DAYS=7
+    volumes:
+      - ./db_backups:/backups
+    depends_on:
+      - db
+
 volumes:
   postgres_data:
   media_data:
