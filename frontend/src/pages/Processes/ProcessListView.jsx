@@ -199,12 +199,24 @@ const ProcessListView = () => {
                                                         </a>
                                                     </div>
                                                 </div>
-                                                <div className="w-full h-[450px] overflow-y-auto custom-scrollbar">
-                                                    <iframe 
-                                                        src={doc.file} 
-                                                        className="w-full h-full border-0 bg-white"
-                                                        title={`Tài liệu ${idx + 1}`}
-                                                    />
+                                                <div className="w-full h-[450px] overflow-y-auto custom-scrollbar bg-slate-100">
+                                                    {doc.file.toLowerCase().match(/\.(pdf|txt)$/i) ? (
+                                                        <iframe 
+                                                            src={doc.file} 
+                                                            className="w-full h-full border-0 bg-white"
+                                                            title={`Tài liệu ${idx + 1}`}
+                                                        />
+                                                    ) : (
+                                                        <div className="flex flex-col items-center justify-center h-full p-6 text-center bg-white">
+                                                            <div className="text-6xl mb-4">📁</div>
+                                                            <h3 className="text-lg font-bold text-slate-800 mb-2 break-all line-clamp-2 max-w-md">{doc.file.split('/').pop()}</h3>
+                                                            <p className="text-slate-600 font-medium mb-1">Định dạng file này không hỗ trợ xem trực tiếp.</p>
+                                                            <p className="text-sm text-slate-500 mb-6">Vui lòng tải file về máy để xem nội dung.</p>
+                                                            <a href={doc.file} download target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 bg-blue-600 text-white font-bold px-6 py-2.5 rounded-xl hover:bg-blue-700 shadow-sm transition-all active:scale-95">
+                                                                ⬇️ Tải file về máy
+                                                            </a>
+                                                        </div>
+                                                    )}
                                                 </div>
                                             </div>
                                         ))}
