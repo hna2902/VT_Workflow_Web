@@ -175,8 +175,11 @@ const ProcessListView = () => {
                                         
                                         {/* Videos */}
                                         {oldVideos.map(vid => (
-                                            <div key={vid.id} className="rounded-xl overflow-hidden bg-black border border-slate-800 shadow-sm col-span-1 md:col-span-2">
+                                            <div key={vid.id} className="rounded-xl overflow-hidden bg-black border border-slate-800 shadow-sm col-span-1 md:col-span-2 relative group">
                                                 {renderFile(vid.file)}
+                                                <a href={vid.file} download target="_blank" rel="noopener noreferrer" className="absolute top-4 right-4 bg-blue-600 text-white px-4 py-2 rounded-lg text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity shadow-lg hover:bg-blue-700 z-10 flex items-center gap-2">
+                                                    ⬇️ Tải video về
+                                                </a>
                                             </div>
                                         ))}
                                         
@@ -187,9 +190,14 @@ const ProcessListView = () => {
                                                     <span className="text-sm font-bold text-slate-700 truncate mr-2" title={doc.file.split('/').pop()}>
                                                         📄 Tài liệu đính kèm {idx + 1}
                                                     </span>
-                                                    <a href={doc.file} target="_blank" rel="noopener noreferrer" className="text-xs font-bold text-indigo-600 hover:text-indigo-800 shrink-0 bg-indigo-50 px-3 py-1 rounded-full border border-indigo-100">
-                                                        Mở thẻ mới
-                                                    </a>
+                                                    <div className="flex gap-2 shrink-0">
+                                                        <a href={doc.file} download target="_blank" rel="noopener noreferrer" className="text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded-full shadow-sm flex items-center gap-1">
+                                                            ⬇️ Tải về
+                                                        </a>
+                                                        <a href={doc.file} target="_blank" rel="noopener noreferrer" className="text-xs font-bold text-indigo-600 hover:text-indigo-800 bg-indigo-50 px-3 py-1 rounded-full border border-indigo-100">
+                                                            Mở thẻ mới
+                                                        </a>
+                                                    </div>
                                                 </div>
                                                 <div className="w-full h-[450px] overflow-y-auto custom-scrollbar">
                                                     <iframe 

@@ -9,6 +9,23 @@ const WorkflowForm = ({ onSuccess, onClose, showAlert, itemId }) => {
     const [imageFiles, setImageFiles] = useState([]);
     const [documentFiles, setDocumentFiles] = useState([]);
 
+    const validateFiles = (files, type) => {
+        const invalidFiles = [];
+        const validFiles = [];
+        
+        files.forEach(f => {
+            if (type === 'image' && !f.type.startsWith('image/')) invalidFiles.push(f.name);
+            else if (type === 'video' && !f.type.startsWith('video/')) invalidFiles.push(f.name);
+            else if (type === 'document' && !f.name.match(/\.(pdf|doc|docx|xls|xlsx|txt)$/i)) invalidFiles.push(f.name);
+            else validFiles.push(f);
+        });
+
+        if (invalidFiles.length > 0) {
+            showAlert("Sai định dạng", `Các file sau bị loại bỏ vì không đúng định dạng: ${invalidFiles.join(', ')}`, "error");
+        }
+        return validFiles;
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
 
@@ -74,7 +91,7 @@ const WorkflowForm = ({ onSuccess, onClose, showAlert, itemId }) => {
                         <input 
                             type="file" 
                             multiple
-                            onChange={(e) => setImageFiles(Array.from(e.target.files))}
+                            onChange={(e) => setImageFiles(validateFiles(Array.from(e.target.files), 'image'))}
                             className="w-full text-xs text-slate-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:font-semibold file:bg-blue-100 file:text-blue-700 hover:file:bg-blue-200 cursor-pointer"
                             accept="image/*"
                         />
@@ -86,7 +103,7 @@ const WorkflowForm = ({ onSuccess, onClose, showAlert, itemId }) => {
                         <input 
                             type="file" 
                             multiple
-                            onChange={(e) => setVideoFiles(Array.from(e.target.files))}
+                            onChange={(e) => setVideoFiles(validateFiles(Array.from(e.target.files), 'video'))}
                             className="w-full text-xs text-slate-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:font-semibold file:bg-blue-100 file:text-blue-700 hover:file:bg-blue-200 cursor-pointer"
                             accept="video/*"
                         />
@@ -98,7 +115,7 @@ const WorkflowForm = ({ onSuccess, onClose, showAlert, itemId }) => {
                         <input 
                             type="file" 
                             multiple
-                            onChange={(e) => setDocumentFiles(Array.from(e.target.files))}
+                            onChange={(e) => setDocumentFiles(validateFiles(Array.from(e.target.files), 'document'))}
                             className="w-full text-xs text-slate-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:font-semibold file:bg-blue-100 file:text-blue-700 hover:file:bg-blue-200 cursor-pointer"
                             accept=".pdf,.doc,.docx,.xls,.xlsx,.txt"
                         />

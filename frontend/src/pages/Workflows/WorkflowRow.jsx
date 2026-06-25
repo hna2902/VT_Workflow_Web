@@ -12,6 +12,23 @@ const WorkflowRow = ({ workflow, onSave, onDelete, isPrivileged }) => {
     const [localImageFiles, setLocalImageFiles] = useState([]);
     const [localDocumentFiles, setLocalDocumentFiles] = useState([]);
 
+    const validateFiles = (files, type) => {
+        const invalidFiles = [];
+        const validFiles = [];
+        
+        files.forEach(f => {
+            if (type === 'image' && !f.type.startsWith('image/')) invalidFiles.push(f.name);
+            else if (type === 'video' && !f.type.startsWith('video/')) invalidFiles.push(f.name);
+            else if (type === 'document' && !f.name.match(/\.(pdf|doc|docx|xls|xlsx|txt)$/i)) invalidFiles.push(f.name);
+            else validFiles.push(f);
+        });
+
+        if (invalidFiles.length > 0) {
+            alert(`Các file sau bị loại bỏ vì không đúng định dạng: ${invalidFiles.join(', ')}`);
+        }
+        return validFiles;
+    };
+
     const [deletedFileIds, setDeletedFileIds] = useState([]);
 
     const oldImages = workflow.files?.filter(f => f.file_type === 'image') || [];
@@ -98,7 +115,7 @@ const WorkflowRow = ({ workflow, onSave, onDelete, isPrivileged }) => {
                                     <input 
                                         type="file" 
                                         multiple
-                                        onChange={(e) => setLocalImageFiles(Array.from(e.target.files))}
+                                        onChange={(e) => setLocalImageFiles(validateFiles(Array.from(e.target.files), 'image'))}
                                         className="w-full text-xs text-slate-500 file:mr-2 file:py-1.5 file:px-2 file:rounded-lg file:border-0 file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer"
                                         accept="image/*"
                                     />
@@ -119,7 +136,7 @@ const WorkflowRow = ({ workflow, onSave, onDelete, isPrivileged }) => {
                                     <input 
                                         type="file" 
                                         multiple
-                                        onChange={(e) => setLocalVideoFiles(Array.from(e.target.files))}
+                                        onChange={(e) => setLocalVideoFiles(validateFiles(Array.from(e.target.files), 'video'))}
                                         className="w-full text-xs text-slate-500 file:mr-2 file:py-1.5 file:px-2 file:rounded-lg file:border-0 file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer"
                                         accept="video/*"
                                     />
@@ -140,7 +157,7 @@ const WorkflowRow = ({ workflow, onSave, onDelete, isPrivileged }) => {
                                     <input 
                                         type="file" 
                                         multiple
-                                        onChange={(e) => setLocalDocumentFiles(Array.from(e.target.files))}
+                                        onChange={(e) => setLocalDocumentFiles(validateFiles(Array.from(e.target.files), 'document'))}
                                         className="w-full text-xs text-slate-500 file:mr-2 file:py-1.5 file:px-2 file:rounded-lg file:border-0 file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer"
                                         accept=".pdf,.doc,.docx,.xls,.xlsx,.txt"
                                     />
