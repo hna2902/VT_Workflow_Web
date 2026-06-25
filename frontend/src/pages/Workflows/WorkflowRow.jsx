@@ -186,6 +186,31 @@ const WorkflowRow = ({ workflow, onSave, onDelete, isPrivileged }) => {
                                 )}
                             </div>
                         )}
+
+                        {/* Display Document Contents */}
+                        {oldDocuments.length > 0 && (
+                            <div className="flex flex-col gap-4 mt-4 w-full">
+                                {oldDocuments.map((doc, idx) => (
+                                    <div key={doc.id} className="border border-slate-200 rounded-xl overflow-hidden bg-slate-50 flex flex-col">
+                                        <div className="bg-slate-100 px-3 py-2 border-b border-slate-200 flex justify-between items-center">
+                                            <span className="text-xs font-bold text-slate-600 truncate mr-2" title={doc.file.split('/').pop()}>
+                                                📄 Tài liệu đính kèm
+                                            </span>
+                                            <a href={doc.file} target="_blank" rel="noreferrer" className="text-xs font-bold text-indigo-600 hover:text-indigo-800 shrink-0">
+                                                Mở thẻ mới
+                                            </a>
+                                        </div>
+                                        <div className="w-full h-[350px] overflow-y-auto custom-scrollbar">
+                                            <iframe 
+                                                src={doc.file} 
+                                                className="w-full h-full border-0 bg-white"
+                                                title={`Tài liệu ${idx + 1}`}
+                                            />
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                     </div>
                 )}
             </div>

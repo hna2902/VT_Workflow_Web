@@ -14,6 +14,13 @@ class User(AbstractUser):
     create_at = models.DateTimeField(auto_now_add=True)
     def __str__(self):
         return self.username
+        
+    def save(self, *args, **kwargs):
+        if self.role == 'Admin':
+            self.is_staff = True
+        else:
+            self.is_staff = False
+        super().save(*args, **kwargs)
     
 @receiver(post_save, sender=User)
 def ensure_superuser_is_admin(sender, instance, created, **kwargs):
