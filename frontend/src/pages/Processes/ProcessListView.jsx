@@ -181,9 +181,23 @@ const ProcessListView = () => {
                                         ))}
                                         
                                         {/* Documents */}
-                                        {oldDocuments.map(doc => (
-                                            <div key={doc.id} className="flex justify-start col-span-1 md:col-span-2">
-                                                {renderFile(doc.file)}
+                                        {oldDocuments.map((doc, idx) => (
+                                            <div key={doc.id} className="col-span-1 md:col-span-2 border border-slate-200 rounded-xl overflow-hidden bg-slate-50 flex flex-col">
+                                                <div className="bg-slate-100 px-3 py-2 border-b border-slate-200 flex justify-between items-center">
+                                                    <span className="text-sm font-bold text-slate-700 truncate mr-2" title={doc.file.split('/').pop()}>
+                                                        📄 Tài liệu đính kèm {idx + 1}
+                                                    </span>
+                                                    <a href={doc.file} target="_blank" rel="noopener noreferrer" className="text-xs font-bold text-indigo-600 hover:text-indigo-800 shrink-0 bg-indigo-50 px-3 py-1 rounded-full border border-indigo-100">
+                                                        Mở thẻ mới
+                                                    </a>
+                                                </div>
+                                                <div className="w-full h-[450px] overflow-y-auto custom-scrollbar">
+                                                    <iframe 
+                                                        src={doc.file} 
+                                                        className="w-full h-full border-0 bg-white"
+                                                        title={`Tài liệu ${idx + 1}`}
+                                                    />
+                                                </div>
                                             </div>
                                         ))}
                                     </div>
