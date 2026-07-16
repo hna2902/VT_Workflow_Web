@@ -88,38 +88,92 @@ const WorkflowForm = ({ onSuccess, onClose, showAlert, itemId }) => {
                 <div className="grid grid-cols-1 gap-3">
                     <div className="flex flex-col border border-slate-200 rounded-xl p-3 bg-slate-50">
                         <span className="text-xs font-bold text-slate-600 mb-1">Ảnh bìa / Hình ảnh</span>
-                        <input 
-                            type="file" 
-                            multiple
-                            onChange={(e) => setImageFiles(validateFiles(Array.from(e.target.files), 'image'))}
-                            className="w-full text-xs text-slate-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:font-semibold file:bg-blue-100 file:text-blue-700 hover:file:bg-blue-200 cursor-pointer"
-                            accept="image/*"
-                        />
-                        {imageFiles.length > 0 && <span className="text-[10px] text-green-600 font-medium mt-1">Đã chọn {imageFiles.length} ảnh</span>}
+                        <label className="w-full flex items-center cursor-pointer">
+                            <span className="text-xs py-1.5 px-3 rounded-lg font-semibold bg-blue-100 text-blue-700 hover:bg-blue-200 transition-colors">
+                                Chọn ảnh
+                            </span>
+                            <input 
+                                type="file" 
+                                multiple
+                                onChange={(e) => {
+                                    const newValid = validateFiles(Array.from(e.target.files), 'image');
+                                    setImageFiles(prev => [...prev, ...newValid]);
+                                    e.target.value = '';
+                                }}
+                                className="hidden"
+                                accept="image/*"
+                            />
+                        </label>
+                        {imageFiles.length > 0 && (
+                            <div className="mt-2 flex flex-wrap gap-2">
+                                {imageFiles.map((f, i) => (
+                                    <span key={i} className="flex items-center gap-1 bg-slate-200 px-2 py-1 rounded text-xs">
+                                        <span className="truncate max-w-[80px]">{f.name}</span>
+                                        <button type="button" onClick={() => setImageFiles(prev => prev.filter((_, idx) => idx !== i))} className="text-red-500 hover:text-red-700 font-bold ml-1">&times;</button>
+                                    </span>
+                                ))}
+                            </div>
+                        )}
                     </div>
                     
                     <div className="flex flex-col border border-slate-200 rounded-xl p-3 bg-slate-50">
                         <span className="text-xs font-bold text-slate-600 mb-1">Video hướng dẫn</span>
-                        <input 
-                            type="file" 
-                            multiple
-                            onChange={(e) => setVideoFiles(validateFiles(Array.from(e.target.files), 'video'))}
-                            className="w-full text-xs text-slate-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:font-semibold file:bg-blue-100 file:text-blue-700 hover:file:bg-blue-200 cursor-pointer"
-                            accept="video/*"
-                        />
-                        {videoFiles.length > 0 && <span className="text-[10px] text-green-600 font-medium mt-1">Đã chọn {videoFiles.length} video</span>}
+                        <label className="w-full flex items-center cursor-pointer">
+                            <span className="text-xs py-1.5 px-3 rounded-lg font-semibold bg-blue-100 text-blue-700 hover:bg-blue-200 transition-colors">
+                                Chọn video
+                            </span>
+                            <input 
+                                type="file" 
+                                multiple
+                                onChange={(e) => {
+                                    const newValid = validateFiles(Array.from(e.target.files), 'video');
+                                    setVideoFiles(prev => [...prev, ...newValid]);
+                                    e.target.value = '';
+                                }}
+                                className="hidden"
+                                accept="video/*"
+                            />
+                        </label>
+                        {videoFiles.length > 0 && (
+                            <div className="mt-2 flex flex-wrap gap-2">
+                                {videoFiles.map((f, i) => (
+                                    <span key={i} className="flex items-center gap-1 bg-slate-200 px-2 py-1 rounded text-xs">
+                                        <span className="truncate max-w-[80px]">{f.name}</span>
+                                        <button type="button" onClick={() => setVideoFiles(prev => prev.filter((_, idx) => idx !== i))} className="text-red-500 hover:text-red-700 font-bold ml-1">&times;</button>
+                                    </span>
+                                ))}
+                            </div>
+                        )}
                     </div>
 
                     <div className="flex flex-col border border-slate-200 rounded-xl p-3 bg-slate-50">
                         <span className="text-xs font-bold text-slate-600 mb-1">Tài liệu đính kèm (PDF, Word, Excel...)</span>
-                        <input 
-                            type="file" 
-                            multiple
-                            onChange={(e) => setDocumentFiles(validateFiles(Array.from(e.target.files), 'document'))}
-                            className="w-full text-xs text-slate-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:font-semibold file:bg-blue-100 file:text-blue-700 hover:file:bg-blue-200 cursor-pointer"
-                            accept=".pdf,.doc,.docx,.xls,.xlsx,.txt"
-                        />
-                        {documentFiles.length > 0 && <span className="text-[10px] text-green-600 font-medium mt-1">Đã chọn {documentFiles.length} tài liệu</span>}
+                        <label className="w-full flex items-center cursor-pointer">
+                            <span className="text-xs py-1.5 px-3 rounded-lg font-semibold bg-blue-100 text-blue-700 hover:bg-blue-200 transition-colors">
+                                Chọn tài liệu
+                            </span>
+                            <input 
+                                type="file" 
+                                multiple
+                                onChange={(e) => {
+                                    const newValid = validateFiles(Array.from(e.target.files), 'document');
+                                    setDocumentFiles(prev => [...prev, ...newValid]);
+                                    e.target.value = '';
+                                }}
+                                className="hidden"
+                                accept=".pdf,.doc,.docx,.xls,.xlsx,.txt"
+                            />
+                        </label>
+                        {documentFiles.length > 0 && (
+                            <div className="mt-2 flex flex-wrap gap-2">
+                                {documentFiles.map((f, i) => (
+                                    <span key={i} className="flex items-center gap-1 bg-slate-200 px-2 py-1 rounded text-xs">
+                                        <span className="truncate max-w-[80px]">{f.name}</span>
+                                        <button type="button" onClick={() => setDocumentFiles(prev => prev.filter((_, idx) => idx !== i))} className="text-red-500 hover:text-red-700 font-bold ml-1">&times;</button>
+                                    </span>
+                                ))}
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>

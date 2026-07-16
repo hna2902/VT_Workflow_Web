@@ -242,6 +242,7 @@ const ProcessListView = () => {
                                         onDelete={(item) => setDeleteModal({ isOpen: true, processItem: item })}
                                         isPrivileged={isPrivileged}
                                         onUpdateSuccess={fetchData}
+                                        showAlert={showAlert}
                                     />
                                 ))}
                             </div>

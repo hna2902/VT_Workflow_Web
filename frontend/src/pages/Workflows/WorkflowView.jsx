@@ -84,7 +84,12 @@ const WorkflowView = () => {
             // Remove old files
             if (updatedData.deleted_file_ids && updatedData.deleted_file_ids.length > 0) {
                 await Promise.all(updatedData.deleted_file_ids.map(fileId => 
-                    axiosClient.delete(`processes/workflow-files/${fileId}/`)
+                    axiosClient.delete(`processes/workflow-files/${fileId}/`).catch(err => {
+                        // Bỏ qua lỗi 404 nếu file đã bị xóa trước đó
+                        if (err.response && err.response.status !== 404) {
+                            throw err;
+                        }
+                    })
                 ));
             }
 

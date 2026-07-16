@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { FaTrash, FaChevronDown, FaChevronUp, FaPaperclip, FaFile, FaVideo, FaImage } from 'react-icons/fa';
 import axiosClient from '../../utils/axiosClients';
+import Modal from '../../components/common/Modal';
 
-const ProcessRow = ({ processItem, onDelete, isPrivileged, onUpdateSuccess }) => {
+const ProcessRow = ({ processItem, onDelete, isPrivileged, onUpdateSuccess, showAlert }) => {
     const [isExpanded, setIsExpanded] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
 
@@ -13,6 +14,12 @@ const ProcessRow = ({ processItem, onDelete, isPrivileged, onUpdateSuccess }) =>
     const [existingImages, setExistingImages] = useState(processItem.images || []);
     const [newFiles, setNewFiles] = useState([]);
     const [isSaving, setIsSaving] = useState(false);
+    const [imageToDelete, setImageToDelete] = useState(null);
+
+    // Sync existingImages when processItem.images changes from parent re-fetch
+    React.useEffect(() => {
+        setExistingImages(processItem.images || []);
+    }, [processItem.images]);
 
     const renderFileUrl = (fileUrl) => {
         if (!fileUrl) return null;
@@ -51,15 +58,18 @@ const ProcessRow = ({ processItem, onDelete, isPrivileged, onUpdateSuccess }) =>
         setNewFiles([]);
     };
 
-    const handleDeleteExistingFile = async (imageId) => {
-        if (!window.confirm("Bạn có chắc muốn xóa file này vĩnh viễn khỏi hệ thống không?")) return;
+    const handleConfirmDeleteImage = async () => {
+        if (!imageToDelete) return;
         try {
-            await axiosClient.delete(`processes/processimage/${imageId}/`);
-            setExistingImages(prev => prev.filter(img => img.id !== imageId));
+            await axiosClient.delete(`processes/process-images/${imageToDelete}/`);
+            setExistingImages(prev => prev.filter(img => img.id !== imageToDelete));
+            setImageToDelete(null);
             if (onUpdateSuccess) onUpdateSuccess();
         } catch (error) {
-            alert("Lỗi khi xóa file!");
+            if (showAlert) showAlert("Lỗi", "Lỗi khi xóa file!", "error");
+            else alert("Lỗi khi xóa file!");
             console.error(error);
+            setImageToDelete(null);
         }
     };
 
@@ -87,7 +97,19 @@ const ProcessRow = ({ processItem, onDelete, isPrivileged, onUpdateSuccess }) =>
             if (onUpdateSuccess) onUpdateSuccess();
         } catch (error) {
             console.error("Django Error:", error.response?.data);
-            alert("Lỗi khi lưu! Vui lòng kiểm tra dữ liệu.");
+            const data = error.response?.data || {};
+            let errorMessage = "Lỗi khi lưu! Vui lòng kiểm tra dữ liệu.";
+            
+            if (data.non_field_errors) {
+                const isDuplicate = data.non_field_errors.some(msg => msg.includes('unique set') || msg.includes('trùng'));
+                if (isDuplicate) {
+                    errorMessage = `Bước số ${localStep} đã tồn tại trong quy trình này! Vui lòng chọn số thứ tự khác.`;
+                } else {
+                    errorMessage = data.non_field_errors[0];
+                }
+            }
+            if (showAlert) showAlert("Thao tác thất bại", errorMessage, "error");
+            else alert(errorMessage);
         } finally {
             setIsSaving(false);
         }
@@ -244,7 +266,7 @@ const ProcessRow = ({ processItem, onDelete, isPrivileged, onUpdateSuccess }) =>
                                                     </div>
                                                 )}
                                                 <button 
-                                                    onClick={() => handleDeleteExistingFile(img.id)}
+                                                    onClick={() => setImageToDelete(img.id)}
                                                     className="absolute top-1 right-1 w-6 h-6 flex items-center justify-center bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600"
                                                     title="Xóa vĩnh viễn"
                                                 >
@@ -259,18 +281,23 @@ const ProcessRow = ({ processItem, onDelete, isPrivileged, onUpdateSuccess }) =>
 
                         <div>
                             <label className="block text-xs font-bold text-slate-700 mb-1">Đính kèm thêm File mới (Tùy chọn)</label>
-                            <input 
-                                type="file" 
-                                multiple 
-                                onChange={(e) => {
-                                    if (e.target.files && e.target.files.length > 0) {
-                                        const filesArray = Array.from(e.target.files);
-                                        setNewFiles(prev => [...prev, ...filesArray]);
-                                        e.target.value = '';
-                                    }
-                                }}
-                                className="w-full text-xs text-slate-500 file:mr-2 file:py-1.5 file:px-2 file:rounded-lg file:border-0 file:font-bold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer"
-                            />
+                            <label className="w-full flex items-center cursor-pointer mb-2">
+                                <span className="text-xs py-1.5 px-3 rounded-lg font-bold bg-blue-100 text-blue-700 hover:bg-blue-200 transition-colors mr-2">
+                                    Chọn file
+                                </span>
+                                <input 
+                                    type="file" 
+                                    multiple 
+                                    onChange={(e) => {
+                                        if (e.target.files && e.target.files.length > 0) {
+                                            const filesArray = Array.from(e.target.files);
+                                            setNewFiles(prev => [...prev, ...filesArray]);
+                                            e.target.value = '';
+                                        }
+                                    }}
+                                    className="hidden"
+                                />
+                            </label>
                             {newFiles.length > 0 && (
                                 <div className="mt-2 flex flex-wrap gap-2">
                                     {newFiles.map((file, idx) => (
@@ -294,6 +321,30 @@ const ProcessRow = ({ processItem, onDelete, isPrivileged, onUpdateSuccess }) =>
                     </div>
                 </div>
             )}
+            
+            <Modal 
+                isOpen={!!imageToDelete} 
+                onClose={() => setImageToDelete(null)}
+                title="Xác nhận xóa file"
+            >
+                <div className="py-2">
+                    <p className="text-slate-600 mb-6">Bạn có chắc muốn xóa file này vĩnh viễn khỏi hệ thống không? Hành động này không thể hoàn tác.</p>
+                    <div className="flex justify-end gap-3">
+                        <button 
+                            onClick={() => setImageToDelete(null)}
+                            className="px-4 py-2 font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors cursor-pointer"
+                        >
+                            Hủy
+                        </button>
+                        <button 
+                            onClick={handleConfirmDeleteImage}
+                            className="px-4 py-2 font-bold text-white bg-red-600 hover:bg-red-700 rounded-lg shadow-sm hover:shadow transition-all cursor-pointer"
+                        >
+                            Xóa vĩnh viễn
+                        </button>
+                    </div>
+                </div>
+            </Modal>
         </div>
     );
 };

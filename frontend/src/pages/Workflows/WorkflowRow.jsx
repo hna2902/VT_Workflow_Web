@@ -112,14 +112,32 @@ const WorkflowRow = ({ workflow, onSave, onDelete, isPrivileged }) => {
                                             </div>
                                         ))}
                                     </div>
-                                    <input 
-                                        type="file" 
-                                        multiple
-                                        onChange={(e) => setLocalImageFiles(validateFiles(Array.from(e.target.files), 'image'))}
-                                        className="w-full text-xs text-slate-500 file:mr-2 file:py-1.5 file:px-2 file:rounded-lg file:border-0 file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer"
-                                        accept="image/*"
-                                    />
-                                    {localImageFiles.length > 0 && <span className="text-[10px] text-green-600 font-medium mt-1">Sẽ thêm {localImageFiles.length} ảnh</span>}
+                                    <label className="w-full flex items-center cursor-pointer">
+                                        <span className="text-xs py-1.5 px-3 rounded-lg font-semibold bg-indigo-100 text-indigo-700 hover:bg-indigo-200 transition-colors">
+                                            Chọn ảnh
+                                        </span>
+                                        <input 
+                                            type="file" 
+                                            multiple
+                                            onChange={(e) => {
+                                                const newValid = validateFiles(Array.from(e.target.files), 'image');
+                                                setLocalImageFiles(prev => [...prev, ...newValid]);
+                                                e.target.value = '';
+                                            }}
+                                            className="hidden"
+                                            accept="image/*"
+                                        />
+                                    </label>
+                                    {localImageFiles.length > 0 && (
+                                        <div className="mt-2 flex flex-wrap gap-2">
+                                            {localImageFiles.map((f, i) => (
+                                                <span key={i} className="flex items-center gap-1 bg-slate-200 px-2 py-1 rounded text-xs">
+                                                    <span className="truncate max-w-[80px]">{f.name}</span>
+                                                    <button type="button" onClick={() => setLocalImageFiles(prev => prev.filter((_, idx) => idx !== i))} className="text-red-500 hover:text-red-700 font-bold ml-1">&times;</button>
+                                                </span>
+                                            ))}
+                                        </div>
+                                    )}
                                 </div>
                                 <div className="flex flex-col border border-slate-200 rounded-xl p-3 bg-slate-50">
                                     <span className="text-xs font-bold text-slate-600 mb-2">Video</span>
@@ -133,14 +151,32 @@ const WorkflowRow = ({ workflow, onSave, onDelete, isPrivileged }) => {
                                             </div>
                                         ))}
                                     </div>
-                                    <input 
-                                        type="file" 
-                                        multiple
-                                        onChange={(e) => setLocalVideoFiles(validateFiles(Array.from(e.target.files), 'video'))}
-                                        className="w-full text-xs text-slate-500 file:mr-2 file:py-1.5 file:px-2 file:rounded-lg file:border-0 file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer"
-                                        accept="video/*"
-                                    />
-                                    {localVideoFiles.length > 0 && <span className="text-[10px] text-green-600 font-medium mt-1">Sẽ thêm {localVideoFiles.length} video</span>}
+                                    <label className="w-full flex items-center cursor-pointer">
+                                        <span className="text-xs py-1.5 px-3 rounded-lg font-semibold bg-indigo-100 text-indigo-700 hover:bg-indigo-200 transition-colors">
+                                            Chọn video
+                                        </span>
+                                        <input 
+                                            type="file" 
+                                            multiple
+                                            onChange={(e) => {
+                                                const newValid = validateFiles(Array.from(e.target.files), 'video');
+                                                setLocalVideoFiles(prev => [...prev, ...newValid]);
+                                                e.target.value = '';
+                                            }}
+                                            className="hidden"
+                                            accept="video/*"
+                                        />
+                                    </label>
+                                    {localVideoFiles.length > 0 && (
+                                        <div className="mt-2 flex flex-wrap gap-2">
+                                            {localVideoFiles.map((f, i) => (
+                                                <span key={i} className="flex items-center gap-1 bg-slate-200 px-2 py-1 rounded text-xs">
+                                                    <span className="truncate max-w-[80px]">{f.name}</span>
+                                                    <button type="button" onClick={() => setLocalVideoFiles(prev => prev.filter((_, idx) => idx !== i))} className="text-red-500 hover:text-red-700 font-bold ml-1">&times;</button>
+                                                </span>
+                                            ))}
+                                        </div>
+                                    )}
                                 </div>
                                 <div className="flex flex-col border border-slate-200 rounded-xl p-3 bg-slate-50">
                                     <span className="text-xs font-bold text-slate-600 mb-2">Tài liệu</span>
@@ -154,14 +190,32 @@ const WorkflowRow = ({ workflow, onSave, onDelete, isPrivileged }) => {
                                             </div>
                                         ))}
                                     </div>
-                                    <input 
-                                        type="file" 
-                                        multiple
-                                        onChange={(e) => setLocalDocumentFiles(validateFiles(Array.from(e.target.files), 'document'))}
-                                        className="w-full text-xs text-slate-500 file:mr-2 file:py-1.5 file:px-2 file:rounded-lg file:border-0 file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer"
-                                        accept=".pdf,.doc,.docx,.xls,.xlsx,.txt"
-                                    />
-                                    {localDocumentFiles.length > 0 && <span className="text-[10px] text-green-600 font-medium mt-1">Sẽ thêm {localDocumentFiles.length} tài liệu</span>}
+                                    <label className="w-full flex items-center cursor-pointer">
+                                        <span className="text-xs py-1.5 px-3 rounded-lg font-semibold bg-indigo-100 text-indigo-700 hover:bg-indigo-200 transition-colors">
+                                            Chọn tài liệu
+                                        </span>
+                                        <input 
+                                            type="file" 
+                                            multiple
+                                            onChange={(e) => {
+                                                const newValid = validateFiles(Array.from(e.target.files), 'document');
+                                                setLocalDocumentFiles(prev => [...prev, ...newValid]);
+                                                e.target.value = '';
+                                            }}
+                                            className="hidden"
+                                            accept=".pdf,.doc,.docx,.xls,.xlsx,.txt"
+                                        />
+                                    </label>
+                                    {localDocumentFiles.length > 0 && (
+                                        <div className="mt-2 flex flex-wrap gap-2">
+                                            {localDocumentFiles.map((f, i) => (
+                                                <span key={i} className="flex items-center gap-1 bg-slate-200 px-2 py-1 rounded text-xs">
+                                                    <span className="truncate max-w-[80px]">{f.name}</span>
+                                                    <button type="button" onClick={() => setLocalDocumentFiles(prev => prev.filter((_, idx) => idx !== i))} className="text-red-500 hover:text-red-700 font-bold ml-1">&times;</button>
+                                                </span>
+                                            ))}
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         </div>

@@ -99,30 +99,7 @@ class CommentViewSet(viewsets.ModelViewSet):
             
         return response
 
-    def partial_update(self, request, *args, **kwargs):
-        comment = self.get_object()
-        if comment.user != request.user:
-            from rest_framework.exceptions import PermissionDenied
-            raise PermissionDenied("Bạn không có quyền sửa bình luận này.")
-            
-        response = super().partial_update(request, *args, **kwargs)
-        
-        deleted_image_ids = request.data.getlist('deleted_images[]')
-        if deleted_image_ids:
-            CommentImage.objects.filter(id__in=deleted_image_ids, comment=comment).delete()
-        
-        images = request.FILES.getlist('images[]')
-        if not images:
-            images = request.FILES.getlist('images')
-        if images:
-            for image in images:
-                CommentImage.objects.create(comment=comment, img_url=image)
-            from rest_framework.response import Response
-            from rest_framework import status
-            serializer = self.get_serializer(comment)
-            return Response(serializer.data, status=status.HTTP_200_OK)
-            
-        return response
+
 
     def destroy(self, request, *args, **kwargs):
         comment = self.get_object()

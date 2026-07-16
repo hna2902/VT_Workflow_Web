@@ -125,6 +125,18 @@ class ProcessViewSet(viewsets.ModelViewSet):
                 ProcessImage.objects.create(process=process, image_file=image)
         return response
 
+    def update(self, request, *args, **kwargs):
+        response = super().update(request, *args, **kwargs)
+        process = self.get_object()
+        images = request.FILES.getlist('images[]')
+        for image in images:
+            ProcessImage.objects.create(process=process, image_file=image)
+        
+        # Return updated data with new images
+        serializer = self.get_serializer(process)
+        response.data = serializer.data
+        return response
+
 
 class ProcessImageViewSet(viewsets.ModelViewSet):
     queryset = ProcessImage.objects.all()
